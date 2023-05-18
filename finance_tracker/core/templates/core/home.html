@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <section class="hero">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h1>Welcome to MoneyMastery</h1>
+                    <p>Take control of your finances and achieve financial mastery with our powerful personal finance tracker.</p>
+                    <a href="/signup/" class="btn btn-primary">Get Started</a>
+                </div>
+                <div class="col-lg-6">
+                    <img src="{% static 'images/home-image.png' %}" alt="MoneyMastery" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <h2>Track Your Income and Expenses</h2>
+                    <p>Effortlessly monitor your income and expenses to gain a clear understanding of your financial situation.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h2>Automated Expense Categorization</h2>
+                    <p>Our advanced algorithm automatically categorizes your expenses, saving you time and effort.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h2>Personalized Insights and Recommendations</h2>
+                    <p>Receive valuable insights and recommendations tailored to your financial goals and spending habits.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Security settings
 SECRET_KEY = 'your_secret_key_here'
 DEBUG = True
-ALLOWED_HOSTS = ['localhost', 'yourdomain.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'yourdomain.com']
 
 # Application definition
 INSTALLED_APPS = [
@@ -18,7 +18,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    # Add your apps here
+
+
+    # Project apps
+    'core',
+    'users'
+
+    #Third party apps
 ]
 
 MIDDLEWARE = [
@@ -31,12 +37,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'your_project_name.urls'
+ROOT_URLCONF = 'finance_tracker.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -49,7 +55,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'your_project_name.wsgi.application'
+WSGI_APPLICATION = 'finance_tracker.wsgi.application'
 
 # Database settings
 DATABASES = {
