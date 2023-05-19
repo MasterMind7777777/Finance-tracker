@@ -17,14 +17,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
 
 
     # Project apps
     'core',
-    'users'
+    'users',
+    'transactions',
 
     #Third party apps
+    'rest_framework',
+    'crispy_forms',
+    'crispy_bootstrap4',
+    'tempus_dominus',
 ]
 
 MIDDLEWARE = [
@@ -67,8 +71,8 @@ DATABASES = {
 
 # Authentication and user settings
 AUTH_USER_MODEL = 'users.User'
-LOGIN_URL = 'rest_framework:login'
-LOGOUT_URL = 'rest_framework:logout'
+LOGIN_URL = 'users:login'
+LOGOUT_URL = 'users:logout'
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
@@ -110,4 +114,5 @@ PLAID_SECRET = 'your_plaid_secret'
 PLAID_PUBLIC_KEY = 'your_plaid_public_key'
 PLAID_ENV = 'sandbox'  # Change to 'development' or 'production' for live environment
 
-
+# Visual
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

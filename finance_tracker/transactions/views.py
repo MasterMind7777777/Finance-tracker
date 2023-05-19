@@ -1,3 +1,56 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import TransactionForm
+from django.views.decorators.http import require_POST
+from .models import Transaction
+from .models import Category
+from .forms import CategoryForm
 
-# Create your views here.
+def add_transaction(request):
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            transaction.user = request.user
+            transaction.save()
+            return redirect('users:dashboard')
+    else:
+        form = TransactionForm()
+    
+    return render(request, 'transactions/add_transaction.html', {'form': form})
+
+
+@require_POST
+def delete_transaction(request, transaction_id):
+    # Get the transaction object
+    transaction = get_object_or_404(Transaction, id=transaction_id)
+
+    # Perform the delete operation
+    transaction.delete()
+
+    # Redirect to the dashboard or any other appropriate page
+    return redirect('users:dashboard')
+
+
+def manage_categories(request):
+    categories = Category.objects.filter(user=request.user)
+    form = CategoryForm()
+
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            category = form.save(commit=False)
+            category.user = request.user
+            category.save()
+            return redirect('transactions:manage_categories')
+
+    context = {
+        'categories': categories,
+        'form': form
+    }
+    return render(request, 'transactions/manage_categories.html', context)
+
+@require_POST
+def delete_category(request, category_id):
+    category = get_object_or_404(Category, pk=category_id, user=request.user)
+    category.delete()
+    return redirect('transactions:manage_categories')
