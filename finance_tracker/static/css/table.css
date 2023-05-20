@@ -1,36 +1,79 @@
 /* Customized table header style */
 .table thead th {
-    background-color: #f8f9fa; /* Set the background color of the table header */
+    background-color: #f8faf9; /* Set the background color of the table header */
     border-color: #dee2e6; /* Set the border color of the table header */
     font-weight: bold; /* Add bold font weight to the table header text */
     color: #333; /* Set the text color of the table header */
     cursor: pointer; /* Add cursor pointer on hover for sorting */
-  }
-  
-  .table thead th:hover {
+}
+
+.table thead th:hover {
     background-color: #e9ecef; /* Change background color on hover */
-  }
-  
-  /* Remove the blue color from the links inside table headers */
-  .table thead th a {
+}
+
+/* Remove the blue color from the links inside table headers */
+.table thead th a {
     color: inherit;
     text-decoration: none;
-  }
-  
-  /* Add padding and alignment to the header text */
-  .table thead th .header-text {
+}
+
+/* Add padding and alignment to the header text */
+.table thead th .header-text {
     padding-right: 5px;
-  }
-  
-  /* Add spacing between the header text and sort icon */
-  .table thead th .header-text::after {
+}
+
+/* Add spacing between the header text and sort icon */
+.table thead th .header-text::after {
     content: " ";
     display: inline-block;
     width: 5px;
-  }
-  
-  /* Add sort icon */
-  .table thead th i {
+}
+
+/* Add sort icon */
+.table thead th i {
     font-size: 0.8em;
-  }
-  
+}
+
+.datepicker-container .ui-datepicker {
+    z-index: 9999 !important;
+}
+
+.number-container input[type="text"] {
+    padding-right: 20px; /* Add space for the number spinner arrow */
+}
+
+.number-container input[type="number"]::-webkit-inner-spin-button,
+.number-container input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+    position: absolute;
+    right: 0;
+    height: 100%;
+    opacity: 0.5;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.number-container input[type="number"]::-moz-inner-spin-button,
+.number-container input[type="number"]::-moz-outer-spin-button {
+    -moz-appearance: none;
+    margin: 0;
+    position: absolute;
+    right: 0;
+    height: 100%;
+    opacity: 0.5;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.number-container input[type="number"]::-ms-inner-spin-button,
+.number-container input[type="number"]::-ms-outer-spin-button {
+    -ms-appearance: none;
+    margin: 0;
+    position: absolute;
+    right: 0;
+    height: 100%;
+    opacity: 0.5;
+    cursor: pointer;
+    pointer-events: auto;
+}

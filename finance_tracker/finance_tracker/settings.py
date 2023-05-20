@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'core',
     'users',
     'transactions',
+    'budgets',
 
     #Third party apps
     'rest_framework',

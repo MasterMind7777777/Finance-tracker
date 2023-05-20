@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Income</h5>
+                    <p class="card-text amount">{{ user_currency }}{{ total_income }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Expenses</h5>
+                    <p class="card-text amount">{{ user_currency }}{{ total_expenses }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Current Balance</h5>
+                    <p class="card-text amount">{{ user_currency }}{{ current_balance }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h2>Category Budgets</h2>
+            <div class="card">
+                <ul class="list-group list-group-flush">
+                    {% for category, budget in category_budgets.items %}
+                        <li class="list-group-item">
+                            {{ category }} - Budget Limit: {{ budget.currency }}{{ budget.budget_limit }}  | Remaining Budget: {{ budget.currency }}{{ budget.remaining_budget }} | Amount Spent: {{ budget.currency }}{{ budget.amount_spent }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="card-body">
+                    <button id="toggle-form-btn" class="btn btn-primary">Add Budget Limit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="budget-form-wrapper" style="display: none;">
+        <form method="POST" action="{% url 'budgets:budget_overview' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+    <script src="{% static 'js/budget_form_toggle.js' %}"></script>
+{% endblock %}
