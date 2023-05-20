@@ -24,29 +24,57 @@ $(document).ready(function() {
       updateTable();
     });
   
+    // Event listener for the change event of the "Filter By" field
+    $('#filter_by').on('change', function() {
+      var filterBy = $(this).val();
+  
+      // Check if the filterBy field is set to 'Category'
+      if (filterBy === 'Category') {
+        $('#filter_value').hide();
+        $('#category-filter').show();
+      } else {
+        $('#filter_value').show();
+        $('#category-filter').hide();
+      }
+    });
+  
     // Function to update the transaction table with sorted and filtered data
     function updateTable() {
-      var filterBy = $('#filter_by').val();
-      var filterValue = $('#filter_value').val();
-  
-      // Create the AJAX request to fetch the sorted and filtered transactions
-      $.ajax({
+        var filterBy = $('#filter_by').val();
+        var filterValue = $('#filter_value').val();
+    
+        // Check if the filterBy field is set to 'Category'
+        if (filterBy === 'Category') {
+        filterValue = $('#category-filter').val();
+        }
+    
+        // Create the AJAX request to fetch the sorted and filtered transactions
+        $.ajax({
         url: $('#transaction-filter-form').attr('action'),
         type: $('#transaction-filter-form').attr('method'),
         data: {
-          filter_by: filterBy,
-          filter_value: filterValue,
-          sort_field: currentSortField,
-          sort_order: currentSortOrder
+            filter_by: filterBy,
+            filter_value: filterValue,
+            sort_field: currentSortField,
+            sort_order: currentSortOrder
         },
         success: function(data) {
-          // Update the transaction table body
-          $('#transaction-table-body').html($(data).find('#transaction-table-body').html());
+            // Update the transaction table body
+            $('#transaction-table-body').html($(data).find('#transaction-table-body').html());
+          
+            // Update the dropdown options if the filterBy field is set to 'Category'
+            if (filterBy === 'Category') {
+              var categoryOptions = '';
+              $(data).find('#category-filter option').each(function() {
+                categoryOptions += '<option value="' + $(this).val() + '">' + $(this).text() + '</option>';
+              });
+              $('#category-filter').html(categoryOptions);
+            }
         },
         error: function(xhr, textStatus, errorThrown) {
-          console.log('Error:', errorThrown);
+            console.log('Error:', errorThrown);
         }
-      });
+        });
     }
   });
   
