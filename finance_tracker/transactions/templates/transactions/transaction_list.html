@@ -31,6 +31,8 @@
                 </select>
             </div>
         </div>
+        <input type="hidden" id="filter_by_preserved" name="filter_by" value="">
+        <input type="hidden" id="filter_value_preserved" name="filter_value" value="">
         <button type="submit" class="btn btn-primary">Apply Filters</button>
     </form>
     
@@ -76,6 +78,5 @@
     <!-- Include the transaction_filters.js script -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="{% static 'js/transaction_filters.js' %}"></script>
-    <script src="{% static 'js/transaction-sorting.js' %}"></script>
+    <script src="{% static 'js/transaction_filtering.js' %}"></script>
 {% endblock %}
