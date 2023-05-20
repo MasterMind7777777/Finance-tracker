@@ -1,0 +1,36 @@
+/* Customized table header style */
+.table thead th {
+    background-color: #f8faf9; /* Set the background color of the table header */
+    border-color: #dee2e6; /* Set the border color of the table header */
+    font-weight: bold; /* Add bold font weight to the table header text */
+    color: #333; /* Set the text color of the table header */
+    cursor: pointer; /* Add cursor pointer on hover for sorting */
+  }
+  
+  .table thead th:hover {
+    background-color: #e9ecef; /* Change background color on hover */
+  }
+  
+  /* Remove the blue color from the links inside table headers */
+  .table thead th a {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  /* Add padding and alignment to the header text */
+  .table thead th .header-text {
+    padding-right: 5px;
+  }
+  
+  /* Add spacing between the header text and sort icon */
+  .table thead th .header-text::after {
+    content: " ";
+    display: inline-block;
+    width: 5px;
+  }
+  
+  /* Add sort icon */
+  .table thead th i {
+    font-size: 0.8em;
+  }
+  

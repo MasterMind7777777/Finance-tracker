@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST
 from .models import Transaction
 from .models import Category
 from .forms import CategoryForm
+from django.db.models import Q
 
 def add_transaction(request):
     if request.method == 'POST':
@@ -54,3 +55,42 @@ def delete_category(request, category_id):
     category = get_object_or_404(Category, pk=category_id, user=request.user)
     category.delete()
     return redirect('transactions:manage_categories')
+
+
+def transaction_list(request):
+    # Fetch all transactions for the current user
+    transactions = Transaction.objects.filter(user=request.user)
+
+    # Get the sort_by, filter_by, sort_order, and filter_value from the request's GET parameters
+    sort_by = request.GET.get('sort_field', 'date')  # Default to sorting by date
+    filter_by = request.GET.get('filter_by', '')
+    sort_order = request.GET.get('sort_order', 'asc')  # Default to ascending order
+    filter_value = request.GET.get('filter_value', '')
+
+    # Apply filtering based on filter_by and filter_value
+    if filter_by and filter_value:
+        if filter_by == 'category':
+            transactions = transactions.filter(Q(category__icontains=filter_value) |
+                                            Q(title__icontains=filter_value) |
+                                            Q(description__icontains=filter_value))
+        # Add more filters for other fields as needed
+
+    # Apply sorting based on sort_by and sort_order
+    if sort_by:
+        if sort_order == 'asc':
+            transactions = transactions.order_by(sort_by)
+        else:
+            transactions = transactions.order_by(f'-{sort_by}')
+
+    context = {
+        'transactions': transactions
+    }
+    return render(request, 'transactions/transaction_list.html', context)
+
+
+def transaction_detail(request, pk):
+    transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
+    context = {
+        'transaction': transaction
+    }
+    return render(request, 'transactions/transaction_detail.html', context)

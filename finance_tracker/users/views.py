@@ -7,7 +7,6 @@ from transactions.utils import CategoryEncoder
 from transactions.forms import TransactionForm
 from transactions.models import Transaction
 from django.http import JsonResponse
-from django.core.serializers.json import DjangoJSONEncoder
 
 
 def signup(request):

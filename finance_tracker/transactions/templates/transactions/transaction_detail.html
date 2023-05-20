@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container">
+    <h1>Transaction Detail</h1>
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">{{ transaction.title }}</h5>
+        <p class="card-text">{{ transaction.description }}</p>
+        <p class="card-text">Amount: {{ transaction.amount }}</p>
+        <p class="card-text">Category: {{ transaction.category }}</p>
+        <p class="card-text">Date: {{ transaction.date }}</p>
+        <a href="{% url 'transactions:transaction_list' %}" class="btn btn-primary">Back to List</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -43,26 +43,20 @@ $(document).ready(function() {
       success: function(response) {
         // Handle the success response
         console.log(response);
-        // You can add code here to update the transactions table or display a success message
 
-        // Clear the form fields
-        $('#id_title').val('');
-        $('#id_description').val('');
-        $('#id_amount').val('');
-        $('#id_category').val('');
-        $('#id_date').val('');
-
-        // Append the new transaction to the table
-        var transaction = response.transaction;
+        // Update the transactions table with the new transaction
         var newRow = '<tr>' +
-          '<td>' + transaction.title + '</td>' +
-          '<td>' + transaction.description + '</td>' +
-          '<td>' + transaction.amount + '</td>' +
-          '<td>' + transaction.category + '</td>' +
-          '<td>' + transaction.date + '</td>' +
-          '<td><button class="btn btn-danger delete-transaction" data-transaction-id="' + transaction.id + '">Delete</button></td>' +
-          '</tr>';
-        $('table tbody').append(newRow);
+        '<td>' + response.title + '</td>' +
+        '<td>' + response.description + '</td>' +
+        '<td>' + response.amount + '</td>' +
+        '<td>' + response.category + '</td>' +
+        '<td>' + response.date + '</td>' +
+        '<td><button class="btn btn-danger delete-transaction-btn" data-transaction-id="' + response.id + '">Delete</button></td>' +
+        '</tr>';
+      
+      $('table.transactions-table tbody').append(newRow);
+        // Reset the form
+        $('#addTransactionForm')[0].reset();
       },
       error: function(xhr) {
         // Handle the error response
@@ -70,27 +64,5 @@ $(document).ready(function() {
         // You can add code here to display an error message or handle specific error cases
       }
     });
-  });
-
-  // Handle transaction deletion
-  $(document).on('click', '.delete-transaction', function() {
-    var transactionId = $(this).data('transaction-id');
-    if (confirm("Are you sure you want to delete this transaction?")) {
-      $.ajax({
-        type: "POST",
-        url: '/transactions/' + transactionId + '/delete/',
-        success: function(response) {
-          // Handle the success response
-          console.log(response);
-          // You can add code here to update the transactions table or display a success message
-          $(this).closest('tr').remove(); // Remove the deleted transaction row
-        },
-        error: function(xhr) {
-          // Handle the error response
-          console.log(xhr.responseText);
-          // You can add code here to display an error message or handle specific error cases
-        }
-      });
-    }
   });
 });
