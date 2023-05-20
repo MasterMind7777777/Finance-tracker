@@ -5,6 +5,8 @@ from .models import Transaction
 from .models import Category
 from .forms import CategoryForm
 from django.db.models import Q
+from datetime import datetime
+from django.http import JsonResponse
 
 def add_transaction(request):
     if request.method == 'POST':
@@ -30,6 +32,25 @@ def delete_transaction(request, transaction_id):
 
     # Redirect to the dashboard or any other appropriate page
     return redirect('users:dashboard')
+
+
+def categories_view(request):
+    # Fetch all categories from the database
+    categories = Category.objects.all()
+
+    # Convert categories to a list of dictionaries
+    categories_list = [
+        {'id': category.id, 'name': category.name}
+        for category in categories
+    ]
+
+    # Create a dictionary to hold the categories list
+    response_data = {
+        'categories': categories_list
+    }
+
+    # Return the response as JSON
+    return JsonResponse(response_data)
 
 
 def manage_categories(request):
@@ -70,10 +91,21 @@ def transaction_list(request):
     # Apply filtering based on filter_by and filter_value
     if filter_by and filter_value:
         if filter_by == 'category':
-            transactions = transactions.filter(Q(category__icontains=filter_value) |
-                                            Q(title__icontains=filter_value) |
-                                            Q(description__icontains=filter_value))
+            transactions = transactions.filter(category__name__icontains=filter_value)
+        elif filter_by == 'title':
+            transactions = transactions.filter(title__icontains=filter_value)
+        elif filter_by == 'description':
+            transactions = transactions.filter(description__icontains=filter_value)
+        elif filter_by == 'amount':
+            filter_value = float(filter_value)
+            transactions = transactions.filter(amount=filter_value)
+        elif filter_by == 'date':
+            # Parse the filter value as a date string and convert it to a datetime object
+            filter_date = datetime.strptime(filter_value, '%Y-%m-%d').date()
+            transactions = transactions.filter(date=filter_date)
         # Add more filters for other fields as needed
+        elif filter_by == 'field_name':
+            transactions = transactions.filter(field_name__icontains=filter_value)
 
     # Apply sorting based on sort_by and sort_order
     if sort_by:
