@@ -5,7 +5,13 @@ $(document).ready(function() {
 
         // Get the form values
         var filter_by = $('#filter_by').val();
-        var filter_value = $('#filter_value').val();
+        var filter_value = '';
+
+        if (filter_by === 'category') {
+            filter_value = $('#category-filter').val();
+        } else {
+            filter_value = $('#filter_value').val();
+        }
 
         // Modify filter value based on the field type
         if (filter_by === 'amount') {
@@ -28,5 +34,21 @@ $(document).ready(function() {
                 console.log('Error:', errorThrown);
             }
         });
+    });
+
+    // Function to handle the change event of the Filter By select
+    $('#filter_by').on('change', function() {
+        var filterBy = $(this).val();
+
+        // Show/hide the filter value input and category dropdown based on the selected option
+        if (filterBy === 'category') {
+            $('#filter_value').hide();
+            $('#category-filter').show();
+            $('#filter_value_label').text('Category:');
+        } else {
+            $('#filter_value').show();
+            $('#category-filter').hide();
+            $('#filter_value_label').text('Filter Value:');
+        }
     });
 });

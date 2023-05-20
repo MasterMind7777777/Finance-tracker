@@ -107,6 +107,9 @@ def transaction_list(request):
         elif filter_by == 'field_name':
             transactions = transactions.filter(field_name__icontains=filter_value)
 
+    # Retrieve distinct categories from the filtered transactions
+    categories = transactions.values_list('category__name', flat=True).distinct()
+
     # Apply sorting based on sort_by and sort_order
     if sort_by:
         if sort_order == 'asc':
@@ -115,7 +118,8 @@ def transaction_list(request):
             transactions = transactions.order_by(f'-{sort_by}')
 
     context = {
-        'transactions': transactions
+        'transactions': transactions,
+        'categories': categories,
     }
     return render(request, 'transactions/transaction_list.html', context)
 
