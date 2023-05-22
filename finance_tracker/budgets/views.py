@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CategoryBudgetForm
 from .models import CategoryBudget
 from transactions.models import Transaction, Category
@@ -36,6 +36,7 @@ def budget_overview(request):
             category_budget = None
             remaining_budget = None
         category_budgets[category.name] = {
+            'id': category_budget.id if category_budget else None,
             'budget_limit': category_budget.budget_limit if category_budget else None,
             'remaining_budget': remaining_budget,
             'amount_spent': category_expenses or 0,
@@ -62,3 +63,8 @@ def budget_overview(request):
     }
 
     return render(request, 'budgets/overview.html', context)
+
+def delete_budget(request, budget_id):
+    budget = get_object_or_404(CategoryBudget, id=budget_id)
+    budget.delete()
+    return redirect('budgets:budget_overview')

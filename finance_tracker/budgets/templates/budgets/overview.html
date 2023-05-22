@@ -37,11 +37,17 @@
                     {% for category, budget in category_budgets.items %}
                         <li class="list-group-item">
                             {{ category }} - Budget Limit: {{ budget.currency }}{{ budget.budget_limit }}  | Remaining Budget: {{ budget.currency }}{{ budget.remaining_budget }} | Amount Spent: {{ budget.currency }}{{ budget.amount_spent }}
+                            {% if budget.id %}
+                                <form method="POST" action="{% url 'budgets:delete_budget' budget_id=budget.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            {% endif %}
                         </li>
                     {% endfor %}
                 </ul>
                 <div class="card-body">
-                    <button id="toggle-form-btn" class="btn btn-primary">Add Budget Limit</button>
+                    <button id="toggle-form-btn" class="btn btn-primary">Add/Edit Budget Limit</button>
                 </div>
             </div>
         </div>
