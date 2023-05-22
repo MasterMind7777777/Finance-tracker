@@ -61,7 +61,6 @@ def dashboard(request):
             return JsonResponse({
                 'id': transaction.id,
                 'title': transaction.title,
-                'description': transaction.description,
                 'amount': transaction.amount,
                 'category': transaction.category,
                 'date': transaction.date.strftime('%Y-%m-%d %H:%M')  # Format the date as needed

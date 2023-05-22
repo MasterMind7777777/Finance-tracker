@@ -21,7 +21,6 @@
       <thead>
         <tr>
           <th>Title</th>
-          <th>Description</th>
           <th>Amount</th>
           <th>Category</th>
           <th>Date</th>
@@ -30,9 +29,8 @@
       </thead>
       <tbody>
         {% for transaction in transactions %}
-          <tr>
+          <tr class="parent-row" data-transaction-id="{{ transaction.id }}">
             <td>{{ transaction.title }}</td>
-            <td>{{ transaction.description }}</td>
             <td>{{ transaction.amount }}</td>
             <td>{{ transaction.category }}</td>
             <td>{{ transaction.date }}</td>
@@ -40,6 +38,17 @@
               <button class="btn btn-danger delete-transaction-btn" data-transaction-id="{{ transaction.id }}">Delete</button>
             </td>
           </tr>
+          {% for child_transaction in transaction.sub_transactions.all %}
+            <tr class="child-row" style="display: none;">
+              <td>{{ child_transaction.title }}</td>
+              <td>{{ child_transaction.amount }}</td>
+              <td>{{ child_transaction.category }}</td>
+              <td>{{ child_transaction.date }}</td>
+              <td>
+                <button class="btn btn-danger delete-transaction-btn" data-transaction-id="{{ child_transaction.id }}">Delete</button>
+              </td>
+            </tr>
+          {% endfor %}
         {% endfor %}
       </tbody>
     </table>
@@ -51,4 +60,5 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css" crossorigin="anonymous" />
   <script src="{% static 'js/add_transaction.js' %}"></script>
   <script src="{% static 'js/delete_transaction.js' %}"></script>
+  <script src="{% static 'js/expand_transactions.js' %}"></script>
 {% endblock %}
