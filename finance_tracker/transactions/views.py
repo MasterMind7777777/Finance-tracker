@@ -1,9 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import TransactionForm
 from django.views.decorators.http import require_POST
-from .models import Transaction
-from .models import Category
-from .forms import CategoryForm
+from .models import Transaction, Category
+from .forms import CategoryForm, TransactionForm
 from django.db.models import Q
 from datetime import datetime
 from django.http import JsonResponse
@@ -117,9 +115,19 @@ def transaction_list(request):
         else:
             transactions = transactions.order_by(f'-{sort_by}')
 
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            transaction.user = request.user
+            transaction.save()
+    else:
+        form = TransactionForm()
+
     context = {
         'transactions': transactions,
         'categories': categories,
+        'form': form
     }
     return render(request, 'transactions/transaction_list.html', context)
 

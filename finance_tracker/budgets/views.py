@@ -44,7 +44,7 @@ def budget_overview(request):
         }
 
     if request.method == 'POST':
-        form = CategoryBudgetForm(request.user, request.POST, category_type=Category.EXPENSE)
+        form = CategoryBudgetForm(request.user, category_type=Category.EXPENSE, data=request.POST)
         if form.is_valid():
             category = form.cleaned_data['category']
             budget_limit = form.cleaned_data['budget_limit']

@@ -1,13 +1,44 @@
 {% for transaction in transactions %}
-<tr>
-    <td>{{ transaction.date }}</td>
-    <td>{{ transaction.title }}</td>
-    <td>{{ transaction.description }}</td>
-    <td>{{ transaction.amount }}</td>
-    <td>{{ transaction.category }}</td>
-</tr>
-{% empty %}
-<tr>
-    <td colspan="5">No transactions found.</td>
-</tr>
+    {% csrf_token %}
+    <tr id="{{ transaction.id }}">
+        <td>{{ transaction.date }}</td>
+        <td>{{ transaction.title }}</td>
+        <td>{{ transaction.description }}</td>
+        <td>{{ transaction.amount }}</td>
+        <td>{{ transaction.category }}</td>
+        <td>
+            <div class="btn-group" role="group">
+                <button class="btn btn-danger delete-transaction-btn" data-transaction-id="{{ transaction.id }}">Delete</button>
+                <button class="btn btn-primary expand-transaction-btn" onclick="showChildTransactions('{{ transaction.id }}')">Expand</button>
+            </div>
+        </td>    
+    </tr>
+
+    <!-- <tr class="child-transactions-container" style="display: none;">
+        <td colspan="6">
+            {% if transaction.sub_transactions.all %}
+                <table>
+                    {% for child_transaction in transaction.sub_transactions.all %}
+                    <tr>
+                        <td>{{ child_transaction.date }}</td>
+                        <td>{{ child_transaction.title }}</td>
+                        <td>{{ child_transaction.description }}</td>
+                        <td>{{ child_transaction.amount }}</td>
+                        <td>{{ child_transaction.category }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+            <form class="child-transaction-form" method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Submit Child Transaction">
+            </form>
+        </td>
+    </tr> -->
+
+    {% empty %}
+    <tr>
+        <td colspan="5">No transactions found.</td>
+    </tr>
 {% endfor %}
