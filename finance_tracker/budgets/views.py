@@ -20,7 +20,7 @@ def budget_overview(request):
     current_balance = total_income - total_expenses
 
     # Retrieve categories belonging to the user
-    categories = Category.objects.filter(user=request.user)
+    categories = Category.objects.filter(user=request.user, type=Category.EXPENSE)
 
     # Get currency
     user_currency = "$"
@@ -44,14 +44,14 @@ def budget_overview(request):
         }
 
     if request.method == 'POST':
-        form = CategoryBudgetForm(request.user, request.POST)
+        form = CategoryBudgetForm(request.user, request.POST, category_type=Category.EXPENSE)
         if form.is_valid():
             category = form.cleaned_data['category']
             budget_limit = form.cleaned_data['budget_limit']
             CategoryBudget.objects.update_or_create(category=category, user=request.user, defaults={'budget_limit': budget_limit})
             return redirect('budgets:budget_overview')
     else:
-        form = CategoryBudgetForm(request.user)
+        form = CategoryBudgetForm(request.user, category_type=Category.EXPENSE)
 
     context = {
         'total_income': total_income,
@@ -59,7 +59,8 @@ def budget_overview(request):
         'current_balance': current_balance,
         'category_budgets': category_budgets,
         'form': form,
-        'user_currency': user_currency
+        'user_currency': user_currency,
+        'categories': categories
     }
 
     return render(request, 'budgets/overview.html', context)
