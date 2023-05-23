@@ -58,13 +58,16 @@ def dashboard(request):
             transaction.save()
 
             # Return the newly created transaction as JSON response
-            return JsonResponse({
+            response_data = {
                 'id': transaction.id,
                 'title': transaction.title,
+                'description': transaction.description,
                 'amount': transaction.amount,
                 'category': transaction.category,
                 'date': transaction.date.strftime('%Y-%m-%d %H:%M')  # Format the date as needed
-            }, encoder=CategoryEncoder)
+            }
+            return JsonResponse(response_data, encoder=CategoryEncoder)
+
 
     context = {
         'transactions': transactions,

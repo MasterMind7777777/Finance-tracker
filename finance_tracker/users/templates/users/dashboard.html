@@ -21,6 +21,7 @@
       <thead>
         <tr>
           <th>Title</th>
+          <th>Description</th>
           <th>Amount</th>
           <th>Category</th>
           <th>Date</th>
@@ -31,6 +32,7 @@
         {% for transaction in transactions %}
           <tr class="parent-row" data-transaction-id="{{ transaction.id }}">
             <td>{{ transaction.title }}</td>
+            <td>{{ transaction.description}}</td>
             <td>{{ transaction.amount }}</td>
             <td>{{ transaction.category }}</td>
             <td>{{ transaction.date }}</td>
@@ -41,6 +43,7 @@
           {% for child_transaction in transaction.sub_transactions.all %}
             <tr class="child-row" style="display: none;">
               <td>{{ child_transaction.title }}</td>
+              <td>{{ transaction.description }}</td>
               <td>{{ child_transaction.amount }}</td>
               <td>{{ child_transaction.category }}</td>
               <td>{{ child_transaction.date }}</td>
