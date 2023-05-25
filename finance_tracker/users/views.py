@@ -48,7 +48,6 @@ def user_logout(request):
 def dashboard(request):
     user = request.user
     transactions = Transaction.objects.filter(user=user)
-    form = TransactionForm()
 
     if request.method == 'POST':
         form = TransactionForm(request.POST)
@@ -67,6 +66,8 @@ def dashboard(request):
                 'date': transaction.date.strftime('%Y-%m-%d %H:%M')  # Format the date as needed
             }
             return JsonResponse(response_data, encoder=CategoryEncoder)
+    else:
+        form = TransactionForm()
 
 
     context = {

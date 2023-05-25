@@ -7,7 +7,19 @@
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     {% endblock %}
     <h1>Transaction List</h1>
-
+    <tr>
+        <td colspan="6">
+            <button id="add-transaction-btn" class="btn btn-primary">Add Transaction</button>
+            <div id="add-transaction-form" style="display: none;">
+                <h3>Add Transaction</h3>
+                <form id="addTransactionForm" method="POST" class="add-transaction-form">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </form>
+            </div>
+        </td>
+    </tr>
     <form id="transaction-filter-form" method="GET" action="{% url 'transactions:transaction_list' %}">
         <div class="form-row">
             <div class="form-group col-md-4">
@@ -85,5 +97,5 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="{% static 'js/transaction_filtering.js' %}"></script>
     <script src="{% static 'js/delete_transaction.js' %}"></script>
-    <script src="{% static 'js/expand_transactions.js' %}"></script>
+    <script src="{% static 'js/add_transaction.js' %}"></script>
 {% endblock %}

@@ -1,17 +1,19 @@
-{% for transaction in transactions %}
-<tr>
-    <td>
-        <button class="btn btn-danger delete-transaction-btn" data-transaction-id="{{ transaction.id }}">Delete</button>
-        <button class="btn btn-danger delete-transaction-btn" data-transaction-id="{{ transaction.id }}">Delete</button>
-    </td>
-    <td>{{ transaction.date }}</td>
-    <td>{{ transaction.title }}</td>
-    <td>{{ transaction.description }}</td>
-    <td>{{ transaction.amount }}</td>
-    <td>{{ transaction.category }}</td>
-</tr>
-{% empty %}
-<tr>
-    <td colspan="5">No transactions found.</td>
-</tr>
-{% endfor %}
+{% if transactions %}
+    {% for transaction in transactions %}
+    <tr class="parent-row">
+        <td>
+            <button class="btn btn-danger delete-transaction-btn" data-transaction-id="{{ transaction.id }}">Delete</button>
+            <a class="btn btn-primary" href="{% url 'transactions:transaction_detail' transaction.id %}">View Details</a>
+        </td>
+        <td>{{ transaction.date }}</td>
+        <td>{{ transaction.title }}</td>
+        <td>{{ transaction.description }}</td>
+        <td>{{ transaction.amount }}</td>
+        <td>{{ transaction.category }}</td>
+    </tr>
+    {% endfor %}
+{% else %}
+    <tr>
+        <td colspan="6">No transactions found.</td>
+    </tr>
+{% endif %}

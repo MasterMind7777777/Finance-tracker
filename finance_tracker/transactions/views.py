@@ -3,10 +3,11 @@ from .forms import TransactionForm
 from django.views.decorators.http import require_POST
 from .models import Transaction
 from .models import Category
-from .forms import CategoryForm
+from .forms import CategoryForm, TransactionForm
 from django.db.models import Q
 from datetime import datetime
 from django.http import JsonResponse
+from transactions.utils import CategoryEncoder
 
 def add_transaction(request):
     if request.method == 'POST':
@@ -117,12 +118,38 @@ def transaction_list(request):
         else:
             transactions = transactions.order_by(f'-{sort_by}')
 
+    # Handle form submission for main transaction
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            transaction.user = request.user
+            transaction.save()
+            return redirect('transactions:transaction_list')
+
+    else:
+        form = TransactionForm()
+
+    # Handle form submission for subtransaction
+    if request.method == 'POST' and 'add-subtransaction-form' in request.POST:
+        subtransaction_form = TransactionForm(request.POST)
+        if subtransaction_form.is_valid():
+            subtransaction = subtransaction_form.save(commit=False)
+            subtransaction.user = request.user
+            subtransaction.parent_transaction = Transaction.objects.get(pk=request.POST.get('parent_transaction'))
+            subtransaction.save()
+            return redirect('transactions:transaction_list')
+
+    else:
+        subtransaction_form = TransactionForm()
+
     context = {
         'transactions': transactions,
         'categories': categories,
+        'form': form,  # Pass the main transaction form to the template context
+        'subtransaction_form': subtransaction_form,  # Pass the subtransaction form to the template context
     }
     return render(request, 'transactions/transaction_list.html', context)
-
 
 def transaction_detail(request, pk):
     transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
