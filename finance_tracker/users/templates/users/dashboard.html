@@ -57,8 +57,9 @@
     </table>
   </div>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="{% static 'js/add_transaction.js' %}"></script>
-  <script src="{% static 'js/delete_transaction.js' %}"></script>
-  <script src="{% static 'js/expand_transactions.js' %}"></script>
+{% endblock %} 
+
+{% block scripts %}
+<script src="{% static 'js/add_transaction.js' %}"></script>
+<script src="{% static 'js/delete_transaction.js' %}"></script>
 {% endblock %}

@@ -1,3 +1,8 @@
 from django.contrib import admin
+from .models import CategoryBudget
 
-# Register your models here.
+@admin.register(CategoryBudget)
+class CategoryBudgetAdmin(admin.ModelAdmin):
+    list_display = ('user', 'category', 'budget_limit')
+    list_filter = ('user', 'category')
+    search_fields = ('user__username', 'category__name')

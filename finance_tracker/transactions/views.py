@@ -130,30 +130,34 @@ def transaction_list(request):
     else:
         form = TransactionForm()
 
+    context = {
+        'transactions': transactions,
+        'categories': categories,
+        'form': form,  # Pass the main transaction form to the template context
+    }
+    return render(request, 'transactions/transaction_list.html', context)
+
+def transaction_detail(request, pk):
+    transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
+
+    # Retrieve child transactions
+    child_transactions = Transaction.objects.filter(parent_transaction=transaction)
+
     # Handle form submission for subtransaction
     if request.method == 'POST' and 'add-subtransaction-form' in request.POST:
         subtransaction_form = TransactionForm(request.POST)
         if subtransaction_form.is_valid():
             subtransaction = subtransaction_form.save(commit=False)
             subtransaction.user = request.user
-            subtransaction.parent_transaction = Transaction.objects.get(pk=request.POST.get('parent_transaction'))
+            subtransaction.parent_transaction = transaction
             subtransaction.save()
             return redirect('transactions:transaction_list')
-
     else:
         subtransaction_form = TransactionForm()
 
     context = {
-        'transactions': transactions,
-        'categories': categories,
-        'form': form,  # Pass the main transaction form to the template context
-        'subtransaction_form': subtransaction_form,  # Pass the subtransaction form to the template context
-    }
-    return render(request, 'transactions/transaction_list.html', context)
-
-def transaction_detail(request, pk):
-    transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
-    context = {
-        'transaction': transaction
+        'transaction': transaction,
+        'child_transactions': child_transactions,
+        'subtransaction_form': subtransaction_form
     }
     return render(request, 'transactions/transaction_detail.html', context)
