@@ -16,12 +16,14 @@ class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=10, choices=CATEGORY_TYPES)
+    parent_category = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True, related_name='subcategories')
 
     class Meta:
         unique_together = ('user', 'name')
 
     def __str__(self):
         return self.name
+
 
 
 class Transaction(models.Model):

@@ -42,16 +42,16 @@ $(document).ready(function() {
       data: formData,
       success: function(response) {
         // Handle the success response
-        console.log(response);
+        // console.log(response);
 
         // Update the transactions table with the new transaction
         var newRow = '<tr>' +
+        '<td><button class="btn btn-danger delete-transaction-btn" data-transaction-id="' + response.id + '">Delete</button></td>' +
+        '<td>' + response.date + '</td>' +
         '<td>' + response.title + '</td>' +
         '<td>' + response.description + '</td>' +
         '<td>' + response.amount + '</td>' +
         '<td>' + response.category + '</td>' +
-        '<td>' + response.date + '</td>' +
-        '<td><button class="btn btn-danger delete-transaction-btn" data-transaction-id="' + response.id + '">Delete</button></td>' +
         '</tr>';
       
       $('table.transactions-table tbody').append(newRow);

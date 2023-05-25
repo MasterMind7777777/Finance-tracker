@@ -138,26 +138,46 @@ def transaction_list(request):
     return render(request, 'transactions/transaction_list.html', context)
 
 def transaction_detail(request, pk):
-    transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
+    transaction = get_object_or_404(Transaction, pk=pk)
 
     # Retrieve child transactions
-    child_transactions = Transaction.objects.filter(parent_transaction=transaction)
+    transactions = Transaction.objects.filter(parent_transaction_id=pk)
 
     # Handle form submission for subtransaction
-    if request.method == 'POST' and 'add-subtransaction-form' in request.POST:
+    if request.method == 'POST':
         subtransaction_form = TransactionForm(request.POST)
         if subtransaction_form.is_valid():
             subtransaction = subtransaction_form.save(commit=False)
             subtransaction.user = request.user
             subtransaction.parent_transaction = transaction
+
+            # Retrieve allowed categories including parent category and its subcategories
+            allowed_categories = Category.objects.filter(Q(user=request.user) & (Q(pk=transaction.category.pk) | Q(parent_category=transaction.category)))
+            subtransaction_form.fields['category'].queryset = allowed_categories
+
             subtransaction.save()
-            return redirect('transactions:transaction_list')
+            # Return the newly created transaction as JSON response
+            response_data = {
+                'id': subtransaction.id,
+                'title': subtransaction.title,
+                'description': subtransaction.description,
+                'amount': subtransaction.amount,
+                'category': subtransaction.category,
+                'date': subtransaction.date.strftime('%Y-%m-%d %H:%M')  # Format the date as needed
+            }
+            return JsonResponse(response_data, encoder=CategoryEncoder)
     else:
-        subtransaction_form = TransactionForm()
+        subtransaction_form = TransactionForm(initial={'category': transaction.category_id})
+
+        # Retrieve allowed categories including parent category and its subcategories
+        allowed_categories = Category.objects.filter(Q(user=request.user) & (Q(pk=transaction.category.pk) | Q(parent_category=transaction.category)))
+        subtransaction_form.fields['category'].queryset = allowed_categories
 
     context = {
         'transaction': transaction,
-        'child_transactions': child_transactions,
+        'transactions': transactions,
         'subtransaction_form': subtransaction_form
     }
     return render(request, 'transactions/transaction_detail.html', context)
+
+
