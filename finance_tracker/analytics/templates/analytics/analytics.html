@@ -1,85 +1,125 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/analytics.css' %}">
+{% endblock %}
 
 {% block content %}
     <div class="container">
         <h1>Expense Analytics</h1>
         <p>Total Expenses: ${{ total_expenses }}</p>
 
-        <h2>Monthly Expenses</h2>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Month</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for expense in monthly_expenses %}
-                <tr>
-                    <td>{{ expense.date__year }}/{{ expense.date__month }}</td>
-                    <td>${{ expense.total }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="sticky-notes">
+            <div class="row">
+                <div class="col-lg">
+                    <div class="sticky-note draggable">
+                        <h2>Monthly Expenses</h2>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for expense in monthly_expenses %}
+                                    <tr>
+                                        <td>{{ expense.date__year }}/{{ expense.date__month }}</td>
+                                        <td>${{ expense.total }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg">
+                    <div class="sticky-note draggable">
+                        <h2>Category-wise Expenses</h2>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Total Expenses</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category in category_expenses %}
+                                    <tr>
+                                        <td>{{ category.name }}</td>
+                                        <td>${{ category.total }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <h2>Category-wise Expenses</h2>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Total Expenses</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for category in category_expenses %}
-                <tr>
-                    <td>{{ category.name }}</td>
-                    <td>${{ category.total }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <div class="row">
+                <div class="col-lg">
+                    <div class="sticky-note draggable">
+                        <h2>Monthly Income</h2>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for income in monthly_income %}
+                                    <tr>
+                                        <td>{{ income.date__year }}/{{ income.date__month }}</td>
+                                        <td>${{ income.total }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <h1>Income Analytics</h1>
-        <p>Total Income: ${{ total_income }}</p>
-
-        <h2>Monthly Income</h2>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Month</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for income in monthly_income %}
-                <tr>
-                    <td>{{ income.date__year }}/{{ income.date__month }}</td>
-                    <td>${{ income.total }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <h1>Budget Analytics</h1>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Budget Limit</th>
-                    <th>Total Expenses</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for budget in budget_utilization %}
-                <tr>
-                    <td>{{ budget.category.name }}</td>
-                    <td>${{ budget.budget_limit }}</td>
-                    <td>${{ budget.total_expenses }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <div class="row">
+                <div class="col-lg">
+                    <div class="sticky-note draggable">
+                        <h2>Budget Analysis</h2>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Budget Limit</th>
+                                        <th>Total Expenses</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for budget in budget_utilization %}
+                                    <tr>
+                                        <td>{{ budget.category.name }}</td>
+                                        <td>${{ budget.budget_limit }}</td>
+                                        <td>${{ budget.total_expenses }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+{% endblock %}
+{% block scripts %}
+<script>
+    $(function() {
+        $(".draggable").draggable();
+    });
+</script>
 {% endblock %}
