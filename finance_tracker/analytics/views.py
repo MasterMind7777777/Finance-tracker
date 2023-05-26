@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.db.models import Sum
 from transactions.models import Transaction, Category
+from .models import StickyNote
 from budgets.models import CategoryBudget
+from django.template import Context, Template
 
 def analytics_view(request):
     # Expense Analytics
@@ -19,6 +21,13 @@ def analytics_view(request):
     # Transaction Analysis
     transactions = Transaction.objects.all()
 
+    sticky_note = StickyNote.objects.get(title="Monthly Expenses")
+    sticky_note_template = Template(sticky_note.content.html_content)
+    context = Context({
+        'monthly_expenses': monthly_expenses,
+    })
+    rendered_sticky_note_content = sticky_note_template.render(context)
+
     context = {
         'total_expenses': total_expenses,
         'monthly_expenses': monthly_expenses,
@@ -27,6 +36,8 @@ def analytics_view(request):
         'monthly_income': monthly_income,
         'budget_utilization': budget_utilization,
         'transactions': transactions,
+        'sticky_note': sticky_note,
+        'sticky_note_content': rendered_sticky_note_content,
     }
 
     return render(request, 'analytics/analytics.html', context)

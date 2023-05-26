@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load crispy_forms_tags %}
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/analytics.css' %}">
@@ -9,8 +10,34 @@
     <div class="container">
         <h1>Expense Analytics</h1>
         <p>Total Expenses: ${{ total_expenses }}</p>
+        <div class="row">
+            <div class="col-lg">
+                <button id="add-note-btn" class="btn btn-primary">Add Sticky Note</button>
+            </div>
+        </div>
 
         <div class="sticky-notes">
+            <div class="row">
+                <div class="col-lg">
+                    <div class="sticky-note draggable">
+                        <h2>{{ sticky_note.title }}</h2>
+                        {% autoescape off %}
+                            {{ sticky_note_content }}
+                        {% endautoescape %}
+                        <button class="delete-note-btn">&#10005;</button>
+                    </div>
+                </div>
+                <div class="col-lg">
+                    <div class="sticky-note draggable">
+                        <h2>{{ sticky_note.title }}</h2>
+                        {% autoescape off %}
+                            {{ sticky_note_content }}
+                        {% endautoescape %}
+                        <button class="delete-note-btn">&#10005;</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-lg">
                     <div class="sticky-note draggable">
@@ -33,6 +60,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <button class="delete-note-btn">&#10005;</button>
                     </div>
                 </div>
                 <div class="col-lg">
@@ -56,6 +84,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <button class="delete-note-btn">&#10005;</button>
                     </div>
                 </div>
             </div>
@@ -82,6 +111,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <button class="delete-note-btn">&#10005;</button>
                     </div>
                 </div>
             </div>
@@ -110,6 +140,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <button class="delete-note-btn">&#10005;</button>
                     </div>
                 </div>
             </div>
@@ -120,6 +151,17 @@
 <script>
     $(function() {
         $(".draggable").draggable();
+        $(".delete-note-btn").click(function() {
+            $(this).closest(".sticky-note").remove();
+        });
+        $("#add-note-btn").click(function() {
+            var newNote = $('<div class="sticky-note draggable">New Sticky Note<button class="delete-note-btn">&#10005;</button></div>');
+            $(".sticky-notes").append(newNote);
+            newNote.draggable();
+            newNote.find(".delete-note-btn").click(function() {
+                $(this).closest(".sticky-note").remove();
+            });
+        });
     });
 </script>
 {% endblock %}
