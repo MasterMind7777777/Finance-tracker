@@ -21,23 +21,26 @@ def analytics_view(request):
     # Transaction Analysis
     transactions = Transaction.objects.all()
 
-    sticky_note = StickyNote.objects.get(title="Monthly Expenses")
-    sticky_note_template = Template(sticky_note.content.html_content)
-    context = Context({
-        'monthly_expenses': monthly_expenses,
-    })
-    rendered_sticky_note_content = sticky_note_template.render(context)
+    sticky_notes = StickyNote.objects.all()
+
+    # Render each sticky note template and store them in a dictionary
+    rendered_sticky_notes = {}
+    for sticky_note in sticky_notes:
+        sticky_note_template = Template(sticky_note.content.html_content)
+        context = Context({
+            'total_expenses': total_expenses,
+            'monthly_expenses': monthly_expenses,
+            'category_expenses': category_expenses,
+            'total_income': total_income,
+            'monthly_income': monthly_income,
+            'budget_utilization': budget_utilization,
+        })
+        rendered_sticky_note_content = sticky_note_template.render(context)
+        rendered_sticky_notes[sticky_note.title] = rendered_sticky_note_content
 
     context = {
-        'total_expenses': total_expenses,
-        'monthly_expenses': monthly_expenses,
-        'category_expenses': category_expenses,
-        'total_income': total_income,
-        'monthly_income': monthly_income,
-        'budget_utilization': budget_utilization,
         'transactions': transactions,
-        'sticky_note': sticky_note,
-        'sticky_note_content': rendered_sticky_note_content,
+        'sticky_notes': rendered_sticky_notes,
     }
 
     return render(request, 'analytics/analytics.html', context)

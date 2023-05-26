@@ -17,133 +17,15 @@
         </div>
 
         <div class="sticky-notes">
-            <div class="row">
-                <div class="col-lg">
-                    <div class="sticky-note draggable">
-                        <h2>{{ sticky_note.title }}</h2>
-                        {% autoescape off %}
-                            {{ sticky_note_content }}
-                        {% endautoescape %}
-                        <button class="delete-note-btn">&#10005;</button>
-                    </div>
-                </div>
-                <div class="col-lg">
-                    <div class="sticky-note draggable">
-                        <h2>{{ sticky_note.title }}</h2>
-                        {% autoescape off %}
-                            {{ sticky_note_content }}
-                        {% endautoescape %}
-                        <button class="delete-note-btn">&#10005;</button>
-                    </div>
-                </div>
+            {% for title, content in sticky_notes.items %}
+            <div class="sticky-note draggable">
+                <h2>{{ title }}</h2>
+                {% autoescape off %}
+                    {{ content }}
+                {% endautoescape %}
+                <button class="delete-note-btn">&#10005;</button>
             </div>
-
-            <div class="row">
-                <div class="col-lg">
-                    <div class="sticky-note draggable">
-                        <h2>Monthly Expenses</h2>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Month</th>
-                                        <th>Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for expense in monthly_expenses %}
-                                    <tr>
-                                        <td>{{ expense.date__year }}/{{ expense.date__month }}</td>
-                                        <td>${{ expense.total }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <button class="delete-note-btn">&#10005;</button>
-                    </div>
-                </div>
-                <div class="col-lg">
-                    <div class="sticky-note draggable">
-                        <h2>Category-wise Expenses</h2>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Category</th>
-                                        <th>Total Expenses</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for category in category_expenses %}
-                                    <tr>
-                                        <td>{{ category.name }}</td>
-                                        <td>${{ category.total }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <button class="delete-note-btn">&#10005;</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg">
-                    <div class="sticky-note draggable">
-                        <h2>Monthly Income</h2>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Month</th>
-                                        <th>Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for income in monthly_income %}
-                                    <tr>
-                                        <td>{{ income.date__year }}/{{ income.date__month }}</td>
-                                        <td>${{ income.total }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <button class="delete-note-btn">&#10005;</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg">
-                    <div class="sticky-note draggable">
-                        <h2>Budget Analysis</h2>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Category</th>
-                                        <th>Budget Limit</th>
-                                        <th>Total Expenses</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for budget in budget_utilization %}
-                                    <tr>
-                                        <td>{{ budget.category.name }}</td>
-                                        <td>${{ budget.budget_limit }}</td>
-                                        <td>${{ budget.total_expenses }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <button class="delete-note-btn">&#10005;</button>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}
