@@ -4,8 +4,9 @@ from transactions.models import Transaction, Category
 from .models import StickyNote
 from budgets.models import CategoryBudget
 from django.template import Context, Template
+from django.http import JsonResponse
 
-def analytics_view(request):
+def analytics_view(request, sticky_note_id=None):
     # Expense Analytics
     total_expenses = Transaction.objects.filter(category__type='expense').aggregate(Sum('amount'))['amount__sum']
     monthly_expenses = Transaction.objects.filter(category__type='expense').values('date__year', 'date__month').annotate(total=Sum('amount'))
@@ -21,7 +22,10 @@ def analytics_view(request):
     # Transaction Analysis
     transactions = Transaction.objects.all()
 
-    sticky_notes = StickyNote.objects.all()
+    if sticky_note_id is not None:
+        sticky_notes = StickyNote.objects.filter(id=sticky_note_id)
+    else:
+        sticky_notes = StickyNote.objects.all()
 
     # Render each sticky note template and store them in a dictionary
     rendered_sticky_notes = {}
@@ -44,3 +48,15 @@ def analytics_view(request):
     }
 
     return render(request, 'analytics/analytics.html', context)
+
+
+def fetch_sticky_notes(request):
+    sticky_notes = StickyNote.objects.all()
+    data = []
+    for sticky_note in sticky_notes:
+        data.append({
+            'id': sticky_note.id,
+            'title': sticky_note.title,
+            'content': sticky_note.content.html_content
+        })
+    return JsonResponse(data, safe=False)

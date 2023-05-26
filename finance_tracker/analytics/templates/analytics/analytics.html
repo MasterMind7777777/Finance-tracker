@@ -12,7 +12,12 @@
         <p>Total Expenses: ${{ total_expenses }}</p>
         <div class="row">
             <div class="col-lg">
-                <button id="add-note-btn" class="btn btn-primary">Add Sticky Note</button>
+                <div id="fetch-sticky-notes-url" data-url="{% url 'analytics:fetch_sticky_notes' %}">
+                    <button id="add-note-btn" class="btn btn-primary">Add Sticky Note</button>
+                </div>
+                <select id="sticky-note-dropdown" class="form-control">
+                    <!-- Options will be dynamically added using JavaScript -->
+                </select>
             </div>
         </div>
 
@@ -30,20 +35,5 @@
     </div>
 {% endblock %}
 {% block scripts %}
-<script>
-    $(function() {
-        $(".draggable").draggable();
-        $(".delete-note-btn").click(function() {
-            $(this).closest(".sticky-note").remove();
-        });
-        $("#add-note-btn").click(function() {
-            var newNote = $('<div class="sticky-note draggable">New Sticky Note<button class="delete-note-btn">&#10005;</button></div>');
-            $(".sticky-notes").append(newNote);
-            newNote.draggable();
-            newNote.find(".delete-note-btn").click(function() {
-                $(this).closest(".sticky-note").remove();
-            });
-        });
-    });
-</script>
+    <script src="{% static 'js/sticky_notes.js' %}"></script>
 {% endblock %}
