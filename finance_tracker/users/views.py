@@ -47,7 +47,7 @@ def user_logout(request):
 @login_required
 def dashboard(request):
     user = request.user
-    transactions = Transaction.objects.filter(user=user)
+    transactions = Transaction.objects.filter(user=user, parent_transaction=None)
 
     if request.method == 'POST':
         form = TransactionForm(request.POST)

@@ -11,7 +11,12 @@
         <p class="card-text">Amount: {{ transaction.amount }}</p>
         <p class="card-text">Category: {{ transaction.category }}</p>
         <p class="card-text">Date: {{ transaction.date }}</p>
-        <a href="{% url 'transactions:transaction_list' %}" class="btn btn-primary">Back to List</a>
+        
+        {% if transaction.parent_transaction %}
+          <a href="{% url 'transactions:transaction_detail' transaction.parent_transaction.id %}" class="btn btn-primary">Back to Parent Transaction</a>
+        {% else %}
+          <a href="{% url 'transactions:transaction_list' %}" class="btn btn-primary">Back to List</a>
+        {% endif %}
       </div>
     </div>
     <tr>

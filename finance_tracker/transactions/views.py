@@ -81,7 +81,8 @@ def delete_category(request, category_id):
 
 def transaction_list(request):
     # Fetch all transactions for the current user
-    transactions = Transaction.objects.filter(user=request.user)
+    user = request.user
+    transactions = Transaction.objects.filter(user=user, parent_transaction=None)
 
     # Get the sort_by, filter_by, sort_order, and filter_value from the request's GET parameters
     sort_by = request.GET.get('sort_field', 'date')  # Default to sorting by date
