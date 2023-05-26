@@ -30,20 +30,16 @@ $(function() {
     $("#add-note-btn").click(function() {
         // Retrieve the selected sticky note's ID from the dropdown
         var selectedStickyNoteID = $("#sticky-note-dropdown").val();
-    
-        // Retrieve the user ID from the data attribute
-        var userID = $("#user-id").data("user-id");
-    
+        
         // Send a POST request to create the Board and BoardStickyNote
         $.ajax({
-            url: 'create-board/',
+            url: 'analytics/create-board/',
             type: 'POST',
             data: {
                 board_name: 'My Board',
                 sticky_notes: [selectedStickyNoteID],
-                positions_x: [0],
-                positions_y: [0],
-                user_id: userID
+                positions_x: [0],  // Set the initial position as 0, you can change it according to your requirements
+                positions_y: [0]
             },
             dataType: 'json',
             success: function(data) {

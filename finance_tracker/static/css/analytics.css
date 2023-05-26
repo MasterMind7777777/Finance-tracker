@@ -5,3 +5,30 @@
     margin-bottom: 20px;
     background-color: #f9f9f9;
 }
+
+.sticky-notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.sticky-note {
+    flex: 1 0 100%;
+    min-height: 200px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+@media (min-width: 576px) {
+    .sticky-note {
+        flex-basis: calc(50% - 10px);
+    }
+}
+
+@media (min-width: 992px) {
+    .sticky-note {
+        flex-basis: calc(33.33% - 10px);
+    }
+}
