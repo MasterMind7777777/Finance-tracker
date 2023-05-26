@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'users',
     'transactions',
     'budgets',
+    'analytics',
 
     #Third party apps
     'rest_framework',
