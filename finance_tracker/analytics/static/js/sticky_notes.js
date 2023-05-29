@@ -36,7 +36,7 @@ $(function() {
     
         // Send a POST request to create the Board and BoardStickyNote
         $.ajax({
-            url: 'create-board/',
+            url: '/analytics/create-board/',
             type: 'POST',
             data: {
                 board_name: 'My Board',
@@ -48,8 +48,8 @@ $(function() {
             dataType: 'json',
             success: function(data) {
                 console.log('Board and BoardStickyNote created successfully.');
-                // Redirect to the analytics_view page with the selected sticky note ID as a parameter
-                window.location.href = '/analytics/' + selectedStickyNoteID;
+                // Redirect to the analytics_view page with the board ID as a parameter
+                window.location.href = '/analytics/' + data.board_id + '/';
             },
             error: function(xhr, status, error) {
                 console.error('Error creating Board and BoardStickyNote:', error);

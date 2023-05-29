@@ -30,22 +30,26 @@ $(function() {
     $("#add-note-btn").click(function() {
         // Retrieve the selected sticky note's ID from the dropdown
         var selectedStickyNoteID = $("#sticky-note-dropdown").val();
-        
+    
+        // Retrieve the user ID from the data attribute
+        var userID = $("#user-id").data("user-id");
+    
         // Send a POST request to create the Board and BoardStickyNote
         $.ajax({
-            url: 'analytics/create-board/',
+            url: 'create-board/',
             type: 'POST',
             data: {
                 board_name: 'My Board',
                 sticky_notes: [selectedStickyNoteID],
-                positions_x: [0],  // Set the initial position as 0, you can change it according to your requirements
-                positions_y: [0]
+                positions_x: [0],
+                positions_y: [0],
+                user_id: userID
             },
             dataType: 'json',
             success: function(data) {
                 console.log('Board and BoardStickyNote created successfully.');
-                // Redirect to the analytics_view page with the selected sticky note ID as a parameter
-                window.location.href = '/analytics/' + selectedStickyNoteID;
+                // Redirect to the analytics_view page with the board ID as a parameter
+                window.location.href = '/analytics/' + data.board_id + '/';
             },
             error: function(xhr, status, error) {
                 console.error('Error creating Board and BoardStickyNote:', error);

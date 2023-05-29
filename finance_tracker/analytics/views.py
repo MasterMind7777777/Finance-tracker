@@ -7,7 +7,7 @@ from django.template import Context, Template
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-def analytics_view(request, sticky_note_id=None):
+def analytics_view(request, board_id=None):
     # Expense Analytics
     total_expenses = Transaction.objects.filter(category__type='expense').aggregate(Sum('amount'))['amount__sum']
     monthly_expenses = Transaction.objects.filter(category__type='expense').values('date__year', 'date__month').annotate(total=Sum('amount'))
@@ -23,9 +23,12 @@ def analytics_view(request, sticky_note_id=None):
     # Transaction Analysis
     transactions = Transaction.objects.all()
 
-    if sticky_note_id is not None:
-        sticky_notes = StickyNote.objects.filter(id=sticky_note_id)
-    else:
+    # Retrieve the board using the board ID
+    try:
+        board = Board.objects.get(id=board_id)
+        sticky_notes = board.sticky_notes.all()
+    except Board.DoesNotExist:
+        board = None
         sticky_notes = StickyNote.objects.all()
 
     # Render each sticky note template and store them in a dictionary
@@ -49,6 +52,7 @@ def analytics_view(request, sticky_note_id=None):
     }
 
     return render(request, 'analytics/analytics.html', context)
+
 
 
 def fetch_sticky_notes(request):
@@ -90,6 +94,30 @@ def create_board(request):
                 user_id=user_id
             )
 
-        return JsonResponse({'message': 'Board and BoardStickyNotes created successfully.'})
+        # Return the board ID along with the success message
+        response_data = {
+            'message': 'Board and BoardStickyNotes created successfully.',
+            'board_id': board.id
+        }
+        return JsonResponse(response_data)
 
     return JsonResponse({'message': 'Invalid request method.'})
+
+
+def fetch_board_sticky_notes(request, board_id):
+    try:
+        board = Board.objects.get(pk=board_id)
+        board_sticky_notes = BoardStickyNote.objects.filter(board=board)
+        data = []
+        for board_sticky_note in board_sticky_notes:
+            sticky_note = board_sticky_note.sticky_note
+            data.append({
+                'id': sticky_note.id,
+                'title': sticky_note.title,
+                'content': sticky_note.content.html_content,
+                'position_x': board_sticky_note.position_x,
+                'position_y': board_sticky_note.position_y
+            })
+        return JsonResponse(data, safe=False)
+    except Board.DoesNotExist:
+        return JsonResponse({'error': 'Board does not exist'}, status=404)
