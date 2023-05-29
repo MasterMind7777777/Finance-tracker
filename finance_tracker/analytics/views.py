@@ -6,6 +6,7 @@ from budgets.models import CategoryBudget
 from django.template import Context, Template
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+import json
 
 def analytics_view(request, board_id=None):
     # Expense Analytics
@@ -54,6 +55,8 @@ def analytics_view(request, board_id=None):
             'id': sticky_note.id,
             'content': rendered_sticky_note_content,
             'given_title': board_sticky_note.given_title,
+            'position_x': board_sticky_note.position_x,
+            'position_y': board_sticky_note.position_y,
         }
 
     context = {
@@ -191,3 +194,117 @@ def delete_sticky_note_from_board(request, board_id):
             return JsonResponse({'error': 'Board does not exist'}, status=404)
 
     return JsonResponse({'message': 'Invalid request method.'})
+
+
+@csrf_exempt
+def save_board(request):
+    if request.method == 'POST':
+        # Retrieve data from the POST request
+        board_name = request.POST.get('board_name')
+        sticky_notes_data = request.POST.get('sticky_notes')
+
+        # Get or create the board
+        board, created = Board.objects.get_or_create(name=board_name)
+
+        # Process sticky notes data
+        sticky_notes = json.loads(sticky_notes_data)
+        for sticky_note_data in sticky_notes:
+            sticky_note_id = sticky_note_data['sticky_note_id']
+            position_x = sticky_note_data['position_x']
+            position_y = sticky_note_data['position_y']
+            user_id = sticky_note_data['user_id']
+            given_title = sticky_note_data['given_title']
+
+            # Retrieve the StickyNote object
+            sticky_note = StickyNote.objects.get(pk=sticky_note_id)
+
+            # Add the sticky note to the board with positions
+            board_sticky_note = BoardStickyNote.objects.create(
+                board=board,
+                sticky_note=sticky_note,
+                position_x=position_x,
+                position_y=position_y,
+                user_id=user_id,
+                given_title=given_title
+            )
+
+        # Return a success message
+        response_data = {
+            'message': 'Board saved successfully.',
+            'board_id': board.id,
+            'created': created
+        }
+        return JsonResponse(response_data)
+
+    else:
+        # Return an error message for unsupported request method
+        response_data = {
+            'error': 'Invalid request method. Only POST method is supported.'
+        }
+        return JsonResponse(response_data, status=400)
+
+
+@csrf_exempt
+def save_board(request, board_id):
+    if request.method == 'POST':
+        # Retrieve data from the POST request
+        board_name = request.POST.get('board_name')
+        sticky_notes_data = request.POST.get('sticky_notes')
+
+        # Check if the board with the given ID already exists
+        try:
+            board = Board.objects.get(pk=board_id)
+            created = False
+        except Board.DoesNotExist:
+            # Create a new board if it doesn't exist
+            board = Board.objects.create(name=board_name)
+            created = True
+
+        # Process sticky notes data
+        # type_sticky_notes_data = type(json.loads(sticky_notes_data))
+        # return JsonResponse({"sticky_notes_data": str(type_sticky_notes_data)}, status=400)
+        
+        sticky_notes = json.loads(sticky_notes_data)
+        for sticky_note_data in sticky_notes:
+            sticky_note_id = sticky_note_data['sticky_note_id']
+            position_x = sticky_note_data['position_x']
+            position_y = sticky_note_data['position_y']
+            user_id = sticky_note_data['user_id']
+            given_title = sticky_note_data['given_title']
+
+            # Retrieve the StickyNote object
+            try:
+                sticky_note = StickyNote.objects.get(pk=sticky_note_id)
+            except StickyNote.DoesNotExist:
+                # Handle the case where the sticky note doesn't exist
+                response_data = {
+                    'error': 'Sticky note with ID {} does not exist.'.format(sticky_note_id)
+                }
+                return JsonResponse(response_data, status=400)
+
+            # Add the sticky note to the board with positions
+            board_sticky_note = BoardStickyNote.objects.create(
+                board=board,
+                sticky_note=sticky_note,
+                position_x=position_x,
+                position_y=position_y,
+                user_id=user_id,
+                given_title=given_title
+            )
+
+        # Return a success message
+        response_data = {
+            'message': 'Board saved successfully.',
+            'board_id': board.id,
+            'created': created
+        }
+        return JsonResponse(response_data)
+
+    else:
+        # Return an error message for unsupported request method
+        response_data = {
+            'error': 'Invalid request method. Only POST method is supported.'
+        }
+        return JsonResponse(response_data, status=400)
+
+

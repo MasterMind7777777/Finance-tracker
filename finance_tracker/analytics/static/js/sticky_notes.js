@@ -125,5 +125,47 @@ $(function() {
       }
       return null;
     }
-  });
-  
+
+    $(document).ready(function() {
+      // Function to save the board
+      function saveBoard() {
+          var boardName = "Your Board Name";  // Replace with your board name
+          var stickyNotes = [];
+
+          // Iterate over each sticky note
+          $('.sticky-note').each(function() {
+              var stickyNote = {};
+              var userID = $("#user-id").data("user-id");
+
+              // Get sticky note attributes
+              stickyNote.sticky_note_id = $(this).find('.delete-note-btn').data('sticky_note_id');
+              stickyNote.position_x = parseInt($(this).css('left'));
+              stickyNote.position_y = parseInt($(this).css('top'));
+              stickyNote.user_id = userID;  // Replace with the user ID associated with the sticky note
+              stickyNote.given_title = $(this).find('.delete-note-btn').data('given-title');
+
+              // Add sticky note to the array
+              stickyNotes.push(stickyNote);
+          });
+          console.log(stickyNotes);
+          // Create the data to be sent in the POST request
+          var postData = {
+              'board_name': boardName,
+              'sticky_notes': JSON.stringify(stickyNotes)
+          };
+          var currentUrl = window.location.href;
+          // Append '/save_board/' to the current URL
+          var saveBoardUrl = currentUrl + 'save_board/';
+          // Send the POST request
+          $.post(saveBoardUrl, postData, function(response) {
+              console.log(response.message);  // Log the response message
+              // Handle the response as needed
+          });
+      }
+
+      // Event listener for the save button
+      $('#save-button').click(function() {
+          saveBoard();
+      });
+    });
+});

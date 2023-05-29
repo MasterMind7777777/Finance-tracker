@@ -14,6 +14,7 @@
             <div class="col-lg">
                 <div id="fetch-sticky-notes-url" data-url="{% url 'analytics:fetch_sticky_notes' %}"></div>
                 <div id="user-id" data-user-id="{{ request.user.id }}"></div>
+                <button id="save-button" class="btn btn-primary">Save Board</button>
                 <button id="add-note-btn" class="btn btn-primary">Add Sticky Note</button>
                 <select id="sticky-note-dropdown" class="form-control">
                     <!-- Options will be dynamically added using JavaScript -->
@@ -26,12 +27,12 @@
 
         <div class="sticky-notes">
             {% for title, sticky_note in sticky_notes.items %}
-            <div class="sticky-note draggable">
+            <div class="sticky-note draggable" style="position: relative; left: {{ sticky_note.position_x }}px; top: {{ sticky_note.position_y }}px;">
                 <h2>{{ title }}</h2>
                 {% autoescape off %}
                     {{ sticky_note.content }}
                 {% endautoescape %}
-                <button class="delete-note-btn" data-given-title="{{ sticky_note.given_title }}" data-board-id="{{ board_id }}">Delete Note</button>
+                <button class="delete-note-btn" data-given-title="{{ sticky_note.given_title }}" data-board-id="{{ board_id }}" data-sticky_note_id="{{ sticky_note.id }}">Delete Note</button>
             </div>
             {% endfor %}
         </div>
