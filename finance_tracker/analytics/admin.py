@@ -19,4 +19,4 @@ class StickyNoteContentAdmin(admin.ModelAdmin):
 
 @admin.register(BoardStickyNote)
 class BoardStickyNoteAdmin(admin.ModelAdmin):
-    list_display = ['board', 'sticky_note', 'user', 'position_x', 'position_y']
+    list_display = ['board', 'sticky_note', 'user', 'position_x', 'position_y', 'given_title']

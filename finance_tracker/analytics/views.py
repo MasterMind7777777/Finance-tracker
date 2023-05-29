@@ -24,34 +24,40 @@ def analytics_view(request, board_id=None):
     transactions = Transaction.objects.all()
 
     # Retrieve the board using the board ID
-    try:
-        board = Board.objects.get(id=board_id)
-        sticky_notes = board.sticky_notes.all()
-    except Board.DoesNotExist:
+    if board_id:
+        try:
+            board = Board.objects.get(id=board_id)
+            board_sticky_notes = board.boardstickynote_set.all()
+        except Board.DoesNotExist:
+            board_sticky_notes = []
+    else:
         board = None
-        sticky_notes = StickyNote.objects.all()
+        board_sticky_notes = BoardStickyNote.objects.all()
 
     # Render each sticky note template and store them in a dictionary
     rendered_sticky_notes = {}
-    for sticky_note in sticky_notes:
+    for board_sticky_note in board_sticky_notes:
+        sticky_note = board_sticky_note.sticky_note
         sticky_note_template = Template(sticky_note.content.html_content)
         context = Context({
-            'id': sticky_note.id,  # Add the ID of the sticky note to the context
+            'id': sticky_note.id,
             'total_expenses': total_expenses,
             'monthly_expenses': monthly_expenses,
             'category_expenses': category_expenses,
             'total_income': total_income,
             'monthly_income': monthly_income,
             'budget_utilization': budget_utilization,
+            'given_title': board_sticky_note.given_title,
         })
         rendered_sticky_note_content = sticky_note_template.render(context)
-        rendered_sticky_notes[sticky_note.title] = {
-            'id': sticky_note.id,  # Include the ID in the rendered sticky note dictionary
-            'content': rendered_sticky_note_content,  # Include the rendered content
+        rendered_sticky_notes[sticky_note.title + ": " + str(board_sticky_note.given_title)] = {
+            'id': sticky_note.id,
+            'content': rendered_sticky_note_content,
+            'given_title': board_sticky_note.given_title,
         }
 
     context = {
-        'board_id': board.pk,
+        'board_id': board_id,
         'transactions': transactions,
         'sticky_notes': rendered_sticky_notes,
     }
@@ -81,6 +87,7 @@ def create_or_add_to_board(request):
         position_x = request.POST.get('position_x')
         position_y = request.POST.get('position_y')
         user_id = request.POST.get('user_id')
+        given_title = request.POST.get('given_title')
 
         # Check if a board ID is provided
         if board_id:
@@ -94,7 +101,8 @@ def create_or_add_to_board(request):
                     sticky_note=sticky_note,
                     position_x=position_x,
                     position_y=position_y,
-                    user_id=user_id
+                    user_id=user_id,
+                    given_title=given_title
                 )
 
                 # Return a success response
@@ -156,24 +164,30 @@ def fetch_board_sticky_notes(request, board_id):
 def delete_sticky_note_from_board(request, board_id):
     if request.method == 'POST':
         # Retrieve data from the POST request
-        sticky_note_id = request.POST.get('sticky_note_id')
+        given_title = request.POST.get('given_title')
 
         try:
             board = Board.objects.get(pk=board_id)
-            sticky_note = StickyNote.objects.get(pk=sticky_note_id)
+            sticky_note = board.sticky_notes.filter(boardstickynote__given_title=given_title).first()
 
-            # Remove the sticky note from the board
-            board.sticky_notes.remove(sticky_note)
+            if sticky_note:
+                board_sticky_note = BoardStickyNote.objects.filter(board=board, sticky_note=sticky_note, given_title=given_title).first()
 
-            # Return a success response
-            response_data = {
-                'message': 'Sticky note deleted from the board successfully.',
-            }
-            return JsonResponse(response_data)
+                if board_sticky_note:
+                    # Delete the BoardStickyNote entry
+                    board_sticky_note.delete()
+
+                    # Return a success response
+                    response_data = {
+                        'message': 'Sticky note deleted from the board successfully.',
+                    }
+                    return JsonResponse(response_data)
+                else:
+                    return JsonResponse({'error': 'Sticky note does not exist in the board'}, status=404)
+            else:
+                return JsonResponse({'error': 'Sticky note does not exist'}, status=404)
 
         except Board.DoesNotExist:
             return JsonResponse({'error': 'Board does not exist'}, status=404)
-        except StickyNote.DoesNotExist:
-            return JsonResponse({'error': 'Sticky note does not exist'}, status=404)
 
     return JsonResponse({'message': 'Invalid request method.'})

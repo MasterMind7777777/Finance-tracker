@@ -2,7 +2,7 @@ $(function() {
     $(".draggable").draggable();
     
     $(".delete-note-btn").click(function() {
-      var stickyNoteID = $(this).data("sticky-note-id");
+      var given_title = $(this).data("given-title");
       var boardID = $(this).data("board-id");
   
       // Send a POST request to delete the sticky note from the board
@@ -10,7 +10,7 @@ $(function() {
         url: "/analytics/delete-sticky-note/" + boardID + "/",
         type: "POST",
         data: {
-            sticky_note_id: stickyNoteID,
+          given_title: given_title,
         },
         dataType: "json",
         success: function(data) {
@@ -57,6 +57,7 @@ $(function() {
     $("#add-note-btn").click(function() {
       // Retrieve the selected sticky note's ID from the dropdown
       var selectedStickyNoteID = $("#sticky-note-dropdown").val();
+      var giveNameStickyNote = $("#sticky-note-given-note").val();
   
       // Retrieve the user ID from the data attribute
       var userID = $("#user-id").data("user-id");
@@ -76,6 +77,7 @@ $(function() {
             position_x: 0,
             position_y: 0,
             user_id: userID,
+            given_title: giveNameStickyNote
           },
           dataType: "json",
           success: function(data) {
@@ -98,6 +100,7 @@ $(function() {
             position_x: 0,
             position_y: 0,
             user_id: userID,
+            given_title: giveNameStickyNote
           },
           dataType: "json",
           success: function(data) {

@@ -18,6 +18,9 @@
                 <select id="sticky-note-dropdown" class="form-control">
                     <!-- Options will be dynamically added using JavaScript -->
                 </select>
+                <label for="name">Name (4 to 15 characters):</label>
+                <input type="text" id="sticky-note-given-note"
+                       minlength="4" maxlength="15" size="10">
             </div>
         </div>
 
@@ -28,7 +31,7 @@
                 {% autoescape off %}
                     {{ sticky_note.content }}
                 {% endautoescape %}
-                <button class="delete-note-btn" data-sticky-note-id="{{ sticky_note.id }}" data-board-id="{{ board_id }}">Delete Note</button>
+                <button class="delete-note-btn" data-given-title="{{ sticky_note.given_title }}" data-board-id="{{ board_id }}">Delete Note</button>
             </div>
             {% endfor %}
         </div>

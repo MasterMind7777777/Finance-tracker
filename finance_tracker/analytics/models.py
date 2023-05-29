@@ -30,6 +30,7 @@ class BoardStickyNote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     position_x = models.IntegerField()
     position_y = models.IntegerField()
+    given_title = models.CharField(max_length=100, null=True)
 
     def __str__(self):
         return f'{self.board.name} - {self.sticky_note.title}'
