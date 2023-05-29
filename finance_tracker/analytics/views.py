@@ -36,6 +36,7 @@ def analytics_view(request, board_id=None):
     for sticky_note in sticky_notes:
         sticky_note_template = Template(sticky_note.content.html_content)
         context = Context({
+            'id': sticky_note.id,  # Add the ID of the sticky note to the context
             'total_expenses': total_expenses,
             'monthly_expenses': monthly_expenses,
             'category_expenses': category_expenses,
@@ -44,9 +45,13 @@ def analytics_view(request, board_id=None):
             'budget_utilization': budget_utilization,
         })
         rendered_sticky_note_content = sticky_note_template.render(context)
-        rendered_sticky_notes[sticky_note.title] = rendered_sticky_note_content
+        rendered_sticky_notes[sticky_note.title] = {
+            'id': sticky_note.id,  # Include the ID in the rendered sticky note dictionary
+            'content': rendered_sticky_note_content,  # Include the rendered content
+        }
 
     context = {
+        'board_id': board.pk,
         'transactions': transactions,
         'sticky_notes': rendered_sticky_notes,
     }
@@ -67,24 +72,47 @@ def fetch_sticky_notes(request):
     return JsonResponse(data, safe=False)
 
 @csrf_exempt  # Disable CSRF protection for simplicity. Use proper protection in production.
-def create_board(request):
+def create_or_add_to_board(request):
     if request.method == 'POST':
         # Retrieve data from the POST request
+        board_id = request.POST.get('board_id')
         board_name = request.POST.get('board_name')
-        sticky_notes = request.POST.getlist('sticky_notes[]')
-        positions_x = request.POST.getlist('positions_x[]')
-        positions_y = request.POST.getlist('positions_y[]')
-        user_id = request.POST.get('user_id')  # Retrieve the user ID from the request
+        sticky_note_id = request.POST.get('sticky_note_id')
+        position_x = request.POST.get('position_x')
+        position_y = request.POST.get('position_y')
+        user_id = request.POST.get('user_id')
 
-        # Create the Board instance
-        board = Board.objects.create(name=board_name)
+        # Check if a board ID is provided
+        if board_id:
+            try:
+                board = Board.objects.get(pk=board_id)
+                sticky_note = StickyNote.objects.get(pk=sticky_note_id)
 
-        # Create the BoardStickyNote instances
-        for i in range(len(sticky_notes)):
-            sticky_note_id = sticky_notes[i]
-            position_x = positions_x[i]
-            position_y = positions_y[i]
+                # Add the sticky note to the existing board
+                BoardStickyNote.objects.create(
+                    board=board,
+                    sticky_note=sticky_note,
+                    position_x=position_x,
+                    position_y=position_y,
+                    user_id=user_id
+                )
 
+                # Return a success response
+                response_data = {
+                    'message': 'Sticky note added to the board successfully.',
+                }
+                return JsonResponse(response_data)
+
+            except Board.DoesNotExist:
+                return JsonResponse({'error': 'Board does not exist'}, status=404)
+            except StickyNote.DoesNotExist:
+                return JsonResponse({'error': 'Sticky note does not exist'}, status=404)
+
+        else:
+            # Create the Board instance
+            board = Board.objects.create(name=board_name)
+
+            # Create the BoardStickyNote instance
             sticky_note = StickyNote.objects.get(pk=sticky_note_id)
             BoardStickyNote.objects.create(
                 board=board,
@@ -94,14 +122,15 @@ def create_board(request):
                 user_id=user_id
             )
 
-        # Return the board ID along with the success message
-        response_data = {
-            'message': 'Board and BoardStickyNotes created successfully.',
-            'board_id': board.id
-        }
-        return JsonResponse(response_data)
+            # Return the board ID along with the success message
+            response_data = {
+                'message': 'Board and BoardStickyNote created successfully.',
+                'board_id': board.id
+            }
+            return JsonResponse(response_data)
 
     return JsonResponse({'message': 'Invalid request method.'})
+
 
 
 def fetch_board_sticky_notes(request, board_id):
@@ -121,3 +150,30 @@ def fetch_board_sticky_notes(request, board_id):
         return JsonResponse(data, safe=False)
     except Board.DoesNotExist:
         return JsonResponse({'error': 'Board does not exist'}, status=404)
+    
+
+@csrf_exempt
+def delete_sticky_note_from_board(request, board_id):
+    if request.method == 'POST':
+        # Retrieve data from the POST request
+        sticky_note_id = request.POST.get('sticky_note_id')
+
+        try:
+            board = Board.objects.get(pk=board_id)
+            sticky_note = StickyNote.objects.get(pk=sticky_note_id)
+
+            # Remove the sticky note from the board
+            board.sticky_notes.remove(sticky_note)
+
+            # Return a success response
+            response_data = {
+                'message': 'Sticky note deleted from the board successfully.',
+            }
+            return JsonResponse(response_data)
+
+        except Board.DoesNotExist:
+            return JsonResponse({'error': 'Board does not exist'}, status=404)
+        except StickyNote.DoesNotExist:
+            return JsonResponse({'error': 'Sticky note does not exist'}, status=404)
+
+    return JsonResponse({'message': 'Invalid request method.'})

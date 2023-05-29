@@ -22,13 +22,13 @@
         </div>
 
         <div class="sticky-notes">
-            {% for title, content in sticky_notes.items %}
+            {% for title, sticky_note in sticky_notes.items %}
             <div class="sticky-note draggable">
                 <h2>{{ title }}</h2>
                 {% autoescape off %}
-                    {{ content }}
+                    {{ sticky_note.content }}
                 {% endautoescape %}
-                <button class="delete-note-btn">&#10005;</button>
+                <button class="delete-note-btn" data-sticky-note-id="{{ sticky_note.id }}" data-board-id="{{ board_id }}">Delete Note</button>
             </div>
             {% endfor %}
         </div>

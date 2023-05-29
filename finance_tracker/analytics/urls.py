@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.analytics_view, name='analytics'),
     path('<int:board_id>/', views.analytics_view, name='analytics_add'),
     path('fetch-sticky-notes/', views.fetch_sticky_notes, name='fetch_sticky_notes'),
-    path('create-board/', views.create_board, name='create_board'),
+    path('create-or-add-to-board/', views.create_or_add_to_board, name='create_or_add_to_board'),
     path('board/<int:board_id>/sticky-notes/', views.fetch_board_sticky_notes, name='fetch_board_sticky_notes'),
+    path('delete-sticky-note/<int:board_id>/', views.delete_sticky_note_from_board, name='delete_sticky_note_from_board'),
 ]
