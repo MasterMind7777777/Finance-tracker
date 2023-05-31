@@ -13,7 +13,13 @@
         <div class="row">
             <div class="col-lg">
                 <div id="fetch-sticky-notes-url" data-url="{% url 'analytics:fetch_sticky_notes' %}"></div>
+                <div id="fetch-boards-url" data-url="{% url 'analytics:fetch_user_boards' user.id %}"></div>
                 <div id="user-id" data-user-id="{{ request.user.id }}"></div>
+                <select id="board-dropdown" class="form-control">
+                    <option value="empty"></option>
+                    <!-- Options will be dynamically added using JavaScript -->
+                </select>
+                {% if not main_board %}
                 <button id="save-button" class="btn btn-primary">Save Board</button>
                 <button id="add-note-btn" class="btn btn-primary">Add Sticky Note</button>
                 <select id="sticky-note-dropdown" class="form-control">
@@ -22,6 +28,7 @@
                 <label for="name">Name (4 to 15 characters):</label>
                 <input type="text" id="sticky-note-given-note"
                        minlength="4" maxlength="15" size="10">
+                {% endif %}
             </div>
         </div>
 

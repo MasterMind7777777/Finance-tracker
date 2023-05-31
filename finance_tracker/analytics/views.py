@@ -24,6 +24,7 @@ def analytics_view(request, board_id=None):
     # Transaction Analysis
     transactions = Transaction.objects.all()
 
+    main_board = False
     # Retrieve the board using the board ID
     if board_id:
         try:
@@ -32,8 +33,9 @@ def analytics_view(request, board_id=None):
         except Board.DoesNotExist:
             board_sticky_notes = []
     else:
-        board = None
-        board_sticky_notes = BoardStickyNote.objects.all()
+        board = Board.objects.get(id=41)
+        board_sticky_notes = board.boardstickynote_set.all()
+        main_board = True
 
     # Render each sticky note template and store them in a dictionary
     rendered_sticky_notes = {}
@@ -63,6 +65,7 @@ def analytics_view(request, board_id=None):
         'board_id': board_id,
         'transactions': transactions,
         'sticky_notes': rendered_sticky_notes,
+        'main_board': main_board
     }
 
     return render(request, 'analytics/analytics.html', context)
@@ -307,4 +310,24 @@ def save_board(request, board_id):
         }
         return JsonResponse(response_data, status=400)
 
+
+def fetch_user_boards(request, user_id):
+    try:
+        # Retrieve boards that belong to the user
+        boards = Board.objects.filter(boardstickynote__user_id=user_id).distinct()
+        
+        # Create a list of board data
+        data = []
+        for board in boards:
+            data.append({
+                'id': board.id,
+                'name': board.name,
+                'sticky_notes_count': board.sticky_notes.count()
+            })
+        
+        # Return the data as JSON response
+        return JsonResponse(data, safe=False)
+    
+    except Board.DoesNotExist:
+        return JsonResponse({'error': 'User boards not found'}, status=404)
 
