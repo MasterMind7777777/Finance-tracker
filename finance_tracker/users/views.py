@@ -16,9 +16,10 @@ def signup(request):
         if form.is_valid():
             form.save()
             return redirect('users:login')
+        else:
+            error_message = "Invalid form submission."
     else:
         form = CustomUserCreationForm()
-        error_message = None
 
     return render(request, 'users/signup.html', {'form': form, 'error_message': error_message})
 
@@ -33,10 +34,13 @@ def user_login(request):
             if user is not None:
                 login(request, user)
                 return redirect('users:dashboard')  # Redirect to the dashboard page
+            else:
+                error_message = "Invalid username or password."
         else:
-            error_message = "Invalid username or password."
+            error_message = "Invalid form submission."
     else:
         form = CustomAuthenticationForm()
+
     return render(request, 'users/login.html', {'form': form, 'error_message': error_message})
 
 def user_logout(request):
@@ -48,31 +52,36 @@ def user_logout(request):
 def dashboard(request):
     user = request.user
     transactions = Transaction.objects.filter(user=user, parent_transaction=None)
-
+    error_message = ""
     if request.method == 'POST':
         form = TransactionForm(request.POST)
         if form.is_valid():
-            transaction = form.save(commit=False)
-            transaction.user = user
-            transaction.save()
+            try:
+                transaction = form.save(commit=False)
+                transaction.user = user
+                transaction.save()
 
-            # Return the newly created transaction as JSON response
-            response_data = {
-                'id': transaction.id,
-                'title': transaction.title,
-                'description': transaction.description,
-                'amount': transaction.amount,
-                'category': transaction.category,
-                'date': transaction.date.strftime('%Y-%m-%d %H:%M')  # Format the date as needed
-            }
-            return JsonResponse(response_data, encoder=CategoryEncoder)
+                # Return the newly created transaction as JSON response
+                response_data = {
+                    'id': transaction.id,
+                    'title': transaction.title,
+                    'description': transaction.description,
+                    'amount': transaction.amount,
+                    'category': transaction.category,
+                    'date': transaction.date.strftime('%Y-%m-%d %H:%M')  # Format the date as needed
+                }
+                return JsonResponse(response_data, encoder=CategoryEncoder)
+            except Exception as e:
+                error_message = str(e)
+        else:
+            error_message = "Invalid form submission."
     else:
         form = TransactionForm()
 
-
     context = {
         'transactions': transactions,
-        'form': form
+        'form': form,
+        'error_message': error_message
     }
 
     return render(request, 'users/dashboard.html', context)
