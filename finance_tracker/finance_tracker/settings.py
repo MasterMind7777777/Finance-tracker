@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Security settings
 SECRET_KEY = 'your_secret_key_here'
 DEBUG = True
-ALLOWED_HOSTS = ['127.0.0.1', 'yourdomain.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'yourdomain.com', 'testserver']
 
 # Application definition
 INSTALLED_APPS = [
