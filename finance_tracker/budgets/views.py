@@ -8,11 +8,11 @@ from django.http import HttpResponse
 def budget_overview(request):
     try:
         # Retrieve all transactions for the current user
-        transactions = Transaction.objects.filter(user=request.user)
+        transactions = Transaction.objects.filter(user=request.user).select_related('category')
 
         # Calculate the total income and expenses
-        total_income = transactions.filter(category__type='income').aggregate(Sum('amount'))['amount__sum']
-        total_expenses = transactions.filter(category__type='expense').aggregate(Sum('amount'))['amount__sum']
+        total_income = transactions.filter(category__type='income').aggregate(total_income=Sum('amount'))['total_income'] or 0
+        total_expenses = transactions.filter(category__type='expense').aggregate(total_expenses=Sum('amount'))['total_expenses'] or 0
 
         # Handle cases where the sums are None (no transactions or no amounts)
         total_income = total_income or 0
@@ -23,7 +23,7 @@ def budget_overview(request):
         current_balance = current_balance if current_balance is not None else 0
 
         # Retrieve categories belonging to the user
-        categories = Category.objects.filter(user=request.user, type=Category.EXPENSE)
+        categories = Category.objects.filter(user=request.user, type=Category.EXPENSE).prefetch_related('categorybudget_set')
 
         # Get currency
         user_currency = "$"

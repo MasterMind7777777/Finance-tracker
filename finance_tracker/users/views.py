@@ -51,15 +51,14 @@ def user_logout(request):
 @login_required
 def dashboard(request):
     user = request.user
-    transactions = Transaction.objects.filter(user=user, parent_transaction=None)
+    transactions = user.transaction_set.filter(parent_transaction=None)
     error_message = ""
     if request.method == 'POST':
         form = TransactionForm(request.POST)
         if form.is_valid():
             try:
-                transaction = form.save(commit=False)
-                transaction.user = user
-                transaction.save()
+                form.instance.user = user
+                transaction = form.save()
 
                 # Return the newly created transaction as JSON response
                 response_data = {

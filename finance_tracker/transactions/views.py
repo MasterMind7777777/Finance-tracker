@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import TransactionForm
 from django.views.decorators.http import require_POST
 from .models import Transaction
 from .models import Category
@@ -8,6 +7,8 @@ from django.db.models import Q
 from datetime import datetime
 from django.http import JsonResponse
 from transactions.utils import CategoryEncoder
+from django.core import serializers
+
 
 def add_transaction(request):
     if request.method == 'POST':
@@ -47,22 +48,14 @@ def delete_transaction(request, transaction_id):
 
 def categories_view(request):
     try:
-        # Fetch all categories from the database
         categories = Category.objects.all()
-
-        # Convert categories to a list of dictionaries
-        categories_list = [
-            {'id': category.id, 'name': category.name}
-            for category in categories
-        ]
-
-        # Create a dictionary to hold the categories list
+        categories_data = serializers.serialize('json', categories)
+        
         response_data = {
-            'categories': categories_list
+            'categories': categories_data,
         }
 
-        # Return the response as JSON
-        return JsonResponse(response_data)
+        return JsonResponse(response_data, safe=False)
     except Exception as e:
         error_message = str(e)
         return render(request, 'error.html', {'error_message': error_message})
@@ -113,24 +106,24 @@ def transaction_list(request):
         sort_order = request.GET.get('sort_order', 'asc')  # Default to ascending order
         filter_value = request.GET.get('filter_value', '')
 
+        # Mapping of filter fields to lookup fields
+        lookup_mapping = {
+            'category': 'category__name__icontains',
+            'title': 'title__icontains',
+            'description': 'description__icontains',
+            'amount': 'amount',
+            'date': 'date',
+            'field_name': 'field_name__icontains'
+            # Add more fields as needed
+        }
+
         # Apply filtering based on filter_by and filter_value
         if filter_by and filter_value:
-            if filter_by == 'category':
-                transactions = transactions.filter(category__name__icontains=filter_value)
-            elif filter_by == 'title':
-                transactions = transactions.filter(title__icontains=filter_value)
-            elif filter_by == 'description':
-                transactions = transactions.filter(description__icontains=filter_value)
-            elif filter_by == 'amount':
-                filter_value = float(filter_value)
-                transactions = transactions.filter(amount=filter_value)
-            elif filter_by == 'date':
-                # Parse the filter value as a date string and convert it to a datetime object
-                filter_date = datetime.strptime(filter_value, '%Y-%m-%d').date()
-                transactions = transactions.filter(date=filter_date)
-            # Add more filters for other fields as needed
-            elif filter_by == 'field_name':
-                transactions = transactions.filter(field_name__icontains=filter_value)
+            lookup_field = lookup_mapping.get(filter_by)
+            if lookup_field:
+                if filter_by == 'date':
+                    filter_value = datetime.strptime(filter_value, '%Y-%m-%d').date()
+                transactions = transactions.filter(**{lookup_field: filter_value})
 
         # Retrieve distinct categories from the filtered transactions
         categories = transactions.values_list('category__name', flat=True).distinct()

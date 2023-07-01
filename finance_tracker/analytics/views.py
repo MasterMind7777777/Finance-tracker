@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import F, Value, CharField
 from django.db.models import Sum
 from transactions.models import Transaction, Category
 from .models import StickyNote, Board, BoardStickyNote
@@ -11,16 +12,19 @@ import json
 def analytics_view(request, board_id=None):
     try:
         # Expense Analytics
-        total_expenses = Transaction.objects.filter(category__type='expense').aggregate(Sum('amount'))['amount__sum']
+        total_expenses = Transaction.objects.filter(category__type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
         monthly_expenses = Transaction.objects.filter(category__type='expense').values('date__year', 'date__month').annotate(total=Sum('amount'))
         category_expenses = Category.objects.filter(transaction__category__type='expense').annotate(total=Sum('transaction__amount'))
 
         # Income Analytics
-        total_income = Transaction.objects.filter(category__type='income').aggregate(Sum('amount'))['amount__sum']
+        total_income = Transaction.objects.filter(category__type='income').aggregate(Sum('amount'))['amount__sum'] or 0
         monthly_income = Transaction.objects.filter(category__type='income').values('date__year', 'date__month').annotate(total=Sum('amount'))
 
         # Budget Analytics
-        budget_utilization = CategoryBudget.objects.annotate(total_expenses=Sum('category__transaction__amount')).values('category__name', 'budget_limit', 'total_expenses')
+        budget_utilization = CategoryBudget.objects.annotate(total_expenses=Sum('category__transaction__amount')).values('category__name', 'budget_limit', 'total_expenses').annotate(
+            remaining_budget=F('budget_limit') - F('total_expenses'),
+            currency=Value('$', output_field=CharField(max_length=3))
+        )
 
         # Transaction Analysis
         transactions = Transaction.objects.all()
@@ -29,10 +33,10 @@ def analytics_view(request, board_id=None):
         # Retrieve the board using the board ID
         if board_id:
             board = get_object_or_404(Board, id=board_id)
-            board_sticky_notes = board.boardstickynote_set.all()
+            board_sticky_notes = board.boardstickynote_set.all().select_related('sticky_note')
         else:
             board = get_object_or_404(Board, id=41)
-            board_sticky_notes = board.boardstickynote_set.all()
+            board_sticky_notes = board.boardstickynote_set.all().select_related('sticky_note')
             main_board = True
 
         # Render each sticky note template and store them in a dictionary
@@ -50,7 +54,7 @@ def analytics_view(request, board_id=None):
                 'budget_utilization': budget_utilization,
                 'given_title': board_sticky_note.given_title,
             })
-            rendered_sticky_note_content = sticky_note_template.render(context)
+            rendered_sticky_note_content = sticky_note_template.render(context) # posible performance issue
             rendered_sticky_notes[sticky_note.title + ": " + str(board_sticky_note.given_title)] = {
                 'id': sticky_note.id,
                 'content': rendered_sticky_note_content,
