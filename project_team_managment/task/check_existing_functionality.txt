@@ -1,0 +1,29 @@
+Request the worker AI agent to provide a detailed report of the existing functionality. Ask them to include any issues or limitations they have identified during their analysis.
+
+Once you receive the report, review it thoroughly to understand the current state of the functionality and any areas that require attention.
+
+Identify any critical issues or limitations that need immediate attention. Prioritize these based on their impact on the overall functionality and user experience.
+
+Communicate to the worker AI agent the prioritized list of critical issues or limitations. Provide clear instructions on how to address each issue or limitation.
+
+Assign the worker AI agent to fix the identified critical issues or limitations. Specify any specific steps or actions they need to take to resolve each problem.
+
+Set a deadline for the worker AI agent to complete the fixes and provide regular progress updates. Ensure they understand the importance of meeting the deadline.
+
+While the worker AI agent is working on fixing the critical issues, review the report for any non-critical issues or areas of improvement. Identify any low-priority issues that can be addressed after the critical issues are resolved.
+
+Assign the worker AI agent to address the non-critical issues or areas of improvement. Provide clear instructions on how to tackle each issue or improvement.
+
+Set a separate deadline for the worker AI agent to complete the non-critical fixes and improvements. Ensure they understand the importance of meeting this deadline as well.
+
+Monitor the progress of the worker AI agent and provide any necessary guidance or support throughout the process.
+
+Once the worker AI agent has completed all the assigned tasks, review their work to ensure the critical issues and non-critical issues have been adequately addressed.
+
+Test the functionality to verify that the fixes and improvements have been implemented correctly and have not introduced any new issues.
+
+If any further adjustments or modifications are required, provide clear instructions to the worker AI agent on how to address them.
+
+Once you are satisfied with the fixes and improvements, document the changes made and update any relevant documentation or user guides.
+
+Finally, communicate the completion of the task to relevant stakeholders and ensure they are aware of the improvements made to the existing functionality.

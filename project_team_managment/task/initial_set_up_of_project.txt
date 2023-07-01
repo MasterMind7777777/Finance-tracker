@@ -1,0 +1,18 @@
+A high-level overview or documentation of what each Django app is responsible for in the context of the project. 
+This would help us understand the responsibilities of each part of the project.
+
+More detailed information on the database schema. While Django's ORM abstracts a lot of 
+the database interactions, knowing the schema would help us understand the data relationships.
+
+Information on any third-party Django or Python libraries that the project depends on. 
+This could be found in a requirements.txt file or a Pipfile, but neither is present in the project structure provided.
+
+If there are any specific coding standards or practices that the project follows, 
+it would be helpful to know.
+
+Any known issues or areas of the codebase that need improvement or are planned 
+for future development.
+
+Understanding of the testing strategy and how comprehensive the tests are.
+
+Any information on how the project is deployed and any related configurations.

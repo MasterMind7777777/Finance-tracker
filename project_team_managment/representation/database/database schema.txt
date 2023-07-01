@@ -1,0 +1,55 @@
+Analytics App:
+
+StickyNoteContent model: Represents the content of a sticky note.
+note: OneToOneField to StickyNote
+html_content: TextField
+StickyNote model: Represents a sticky note.
+title: CharField
+Board model: Represents a board that contains sticky notes.
+name: CharField
+sticky_notes: ManyToManyField to StickyNote through BoardStickyNote
+BoardStickyNote model: Represents a sticky note on a board.
+board: ForeignKey to Board
+sticky_note: ForeignKey to StickyNote
+user: ForeignKey to User
+position_x: IntegerField
+position_y: IntegerField
+given_title: CharField
+Budgets App:
+
+CategoryBudget model: Represents a budget for a category.
+user: ForeignKey to User
+category: ForeignKey to Category
+budget_limit: DecimalField
+Core App:
+
+No models defined.
+Transactions App:
+
+Category model: Represents a category of transactions.
+user: ForeignKey to User
+name: CharField
+type: CharField with choices
+parent_category: ForeignKey to itself
+Transaction model: Represents a transaction.
+user: ForeignKey to User
+title: CharField
+description: CharField
+amount: DecimalField
+category: ForeignKey to Category
+date: DateTimeField
+parent_transaction: ForeignKey to itself
+Users App:
+
+User model: Represents a user.
+Inherits from AbstractUser
+phone_number: CharField
+date_of_birth: DateField
+UserProfile model: Represents a user's profile.
+user: OneToOneField to User
+bio: TextField
+profile_picture: ImageField
+SocialMediaAccount model: Represents a user's social media account.
+user: ForeignKey to User
+platform: CharField
+username: CharField

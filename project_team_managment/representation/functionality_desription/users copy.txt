@@ -1,0 +1,1 @@
+Give fuctionality and potential issues based on python django view
