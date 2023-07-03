@@ -5,7 +5,7 @@ from transactions.models import Transaction, Category
 from .models import StickyNote, Board, BoardStickyNote
 from budgets.models import CategoryBudget
 from django.template import Context, Template
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 import json
 
@@ -35,7 +35,7 @@ def analytics_view(request, board_id=None):
             board = get_object_or_404(Board, id=board_id)
             board_sticky_notes = board.boardstickynote_set.all().select_related('sticky_note')
         else:
-            board = get_object_or_404(Board, id=41)
+            board = get_object_or_404(Board, id=41) # ToDo unaceptable fix it 
             board_sticky_notes = board.boardstickynote_set.all().select_related('sticky_note')
             main_board = True
 
@@ -71,7 +71,8 @@ def analytics_view(request, board_id=None):
         }
 
         return render(request, 'analytics/analytics.html', context)
-
+    except Http404:
+        return JsonResponse({'error': 'Board not found'}, status=404)
     except Exception as e:
         # Handle unexpected exceptions
         error_message = str(e)
@@ -143,7 +144,8 @@ def create_or_add_to_board(request):
                     sticky_note=sticky_note,
                     position_x=position_x,
                     position_y=position_y,
-                    user_id=user_id
+                    user_id=user_id,
+                    given_title=given_title
                 )
 
                 # Return the board ID along with the success message
@@ -155,6 +157,8 @@ def create_or_add_to_board(request):
 
         return JsonResponse({'message': 'Invalid request method.'})
 
+    except Http404:
+        return JsonResponse({'error': 'sticky_note not found'}, status=404)
     except Exception as e:
         # Handle unexpected exceptions
         response_data = {
@@ -179,6 +183,8 @@ def fetch_board_sticky_notes(request, board_id):
             })
         return JsonResponse(data, safe=False)
 
+    except Http404:
+        return JsonResponse({'error': 'Board not found'}, status=404)
     except Exception as e:
         # Handle unexpected exceptions
         response_data = {
@@ -215,7 +221,6 @@ def delete_sticky_note_from_board(request, board_id):
                 return JsonResponse({'error': 'Sticky note does not exist'}, status=404)
 
         return JsonResponse({'message': 'Invalid request method.'})
-
     except Exception as e:
         # Handle unexpected exceptions
         response_data = {
@@ -225,7 +230,7 @@ def delete_sticky_note_from_board(request, board_id):
 
 
 @csrf_exempt
-def save_board(request):
+def save_board(request, board_id):
     try:
         if request.method == 'POST':
             # Retrieve data from the POST request
