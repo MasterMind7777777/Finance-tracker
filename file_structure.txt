@@ -1,0 +1,186 @@
+┣ 📂finance_tracker
+┃ ┣ 📂.pytest_cache
+┃ ┣ 📂analytics
+┃ ┃ ┣ 📂migrations
+┃ ┃ ┣ 📂static
+┃ ┃ ┃ ┣ 📂css
+┃ ┃ ┃ ┃ ┗ 📜analytics.css
+┃ ┃ ┃ ┗ 📂js
+┃ ┃ ┃   ┗ 📜sticky_notes.js
+┃ ┃ ┣ 📂templates
+┃ ┃ ┃ ┗ 📂analytics
+┃ ┃ ┃   ┗ 📜analytics.html
+┃ ┃ ┣ 📂tests
+┃ ┃ ┃ ┗ 📜test_analytics_views.py
+┃ ┃ ┣ 📜__init__.py
+┃ ┃ ┣ 📜admin.py
+┃ ┃ ┣ 📜apps.py
+┃ ┃ ┣ 📜forms.py
+┃ ┃ ┣ 📜models.py
+┃ ┃ ┣ 📜tests.py
+┃ ┃ ┣ 📜urls.py
+┃ ┃ ┗ 📜views.py
+┃ ┣ 📂budgets
+┃ ┃ ┣ 📂migrations
+┃ ┃ ┣ 📂static
+┃ ┃ ┃ ┗ 📂js
+┃ ┃ ┃   ┗ 📜budget_form_toggle.js
+┃ ┃ ┣ 📂templates
+┃ ┃ ┃ ┗ 📂budgets
+┃ ┃ ┃   ┗ 📜overview.html
+┃ ┃ ┣ 📂tests
+┃ ┃ ┃ ┗ 📜test_budgets_views.py
+┃ ┃ ┣ 📜__init__.py
+┃ ┃ ┣ 📜admin.py
+┃ ┃ ┣ 📜apps.py
+┃ ┃ ┣ 📜forms.py
+┃ ┃ ┣ 📜models.py
+┃ ┃ ┣ 📜tests.py
+┃ ┃ ┣ 📜urls.py
+┃ ┃ ┗ 📜views.py
+┃ ┣ 📂core
+┃ ┃ ┣ 📂migrations
+┃ ┃ ┣ 📂static
+┃ ┃ ┃ ┗ 📂images
+┃ ┃ ┃   ┗ 📜home-image.png
+┃ ┃ ┣ 📂templates
+┃ ┃ ┃ ┗ 📂core
+┃ ┃ ┃   ┗ 📜home.html
+┃ ┃ ┣ 📜__init__.py
+┃ ┃ ┣ 📜admin.py
+┃ ┃ ┣ 📜apps.py
+┃ ┃ ┣ 📜models.py
+┃ ┃ ┣ 📜tests.py
+┃ ┃ ┣ 📜urls.py
+┃ ┃ ┗ 📜views.py
+┃ ┣ 📂finance_tracker
+┃ ┃ ┣ 📜__init__.py
+┃ ┃ ┣ 📜asgi.py
+┃ ┃ ┣ 📜settings.py
+┃ ┃ ┣ 📜urls.py
+┃ ┃ ┗ 📜wsgi.py
+┃ ┣ 📂media
+┃ ┃ ┗ 📂images
+┃ ┣ 📂static
+┃ ┃ ┣ 📂admin
+┃ ┃ ┃ ┣ 📂css
+┃ ┃ ┃ ┃ ┣ 📜autocomplete.css
+┃ ┃ ┃ ┃ ┣ 📜base.css
+┃ ┃ ┃ ┃ ┣ 📜changelists.css
+┃ ┃ ┃ ┃ ┣ 📜dark_mode.css
+┃ ┃ ┃ ┃ ┣ 📜dashboard.css
+┃ ┃ ┃ ┃ ┣ 📜forms.css
+┃ ┃ ┃ ┃ ┣ 📜login.css
+┃ ┃ ┃ ┃ ┣ 📜nav_sidebar.css
+┃ ┃ ┃ ┃ ┣ 📜responsive_rtl.css
+┃ ┃ ┃ ┃ ┣ 📜responsive.css
+┃ ┃ ┃ ┃ ┣ 📜rtl.css
+┃ ┃ ┃ ┃ ┗ 📜widgets.css
+┃ ┃ ┃ ┗ 📂js
+┃ ┃ ┃   ┣ 📂admin
+┃ ┃ ┃   ┃ ┣ 📜DateTimeShortcuts.js
+┃ ┃ ┃   ┃ ┗ 📜RelatedObjectLookups.js
+┃ ┃ ┃   ┣ 📜actions.js
+┃ ┃ ┃   ┣ 📜autocomplete.js
+┃ ┃ ┃   ┣ 📜calendar.js
+┃ ┃ ┃   ┣ 📜cancel.js
+┃ ┃ ┃   ┣ 📜change_form.js
+┃ ┃ ┃   ┣ 📜collapse.js
+┃ ┃ ┃   ┣ 📜core.js
+┃ ┃ ┃   ┣ 📜filters.js
+┃ ┃ ┃   ┣ 📜inlines.js
+┃ ┃ ┃   ┣ 📜jquery.init.js
+┃ ┃ ┃   ┣ 📜nav_sidebar.js
+┃ ┃ ┃   ┣ 📜popup_response.js
+┃ ┃ ┃   ┣ 📜prepopulate_init.js
+┃ ┃ ┃   ┣ 📜prepopulate.js
+┃ ┃ ┃   ┣ 📜SelectBox.js
+┃ ┃ ┃   ┣ 📜SelectFilter2.js
+┃ ┃ ┃   ┣ 📜theme.js
+┃ ┃ ┃   ┗ 📜urlify.js
+┃ ┃ ┣ 📂css
+┃ ┃ ┃ ┣ 📜analytics.css
+┃ ┃ ┃ ┣ 📜custom.css
+┃ ┃ ┃ ┗ 📜table.css
+┃ ┃ ┣ 📂images
+┃ ┃ ┃ ┗ 📜home-image.png
+┃ ┃ ┣ 📂js
+┃ ┃ ┃ ┣ 📜add_transaction.js
+┃ ┃ ┃ ┣ 📜budget_form_toggle.js
+┃ ┃ ┃ ┣ 📜delete_transaction.js
+┃ ┃ ┃ ┣ 📜sticky_notes.js
+┃ ┃ ┃ ┣ 📜transaction_filtering.js
+┃ ┃ ┃ ┗ 📜transaction_filters.js
+┃ ┣ 📂templates
+┃ ┃ ┣ 📜base.html
+┃ ┃ ┣ 📜error.html
+┃ ┃ ┣ 📜footer.html
+┃ ┃ ┗ 📜header.html
+┃ ┣ 📂transactions
+┃ ┃ ┣ 📂migrations
+┃ ┃ ┣ 📂static
+┃ ┃ ┃ ┣ 📂css
+┃ ┃ ┃ ┃ ┗ 📜table.css
+┃ ┃ ┃ ┗ 📂js
+┃ ┃ ┃   ┣ 📜add_transaction.js
+┃ ┃ ┃   ┣ 📜delete_transaction.js
+┃ ┃ ┃   ┗ 📜transaction_filtering.js
+┃ ┃ ┣ 📂templates
+┃ ┃ ┃ ┗ 📂transactions
+┃ ┃ ┃   ┣ 📜add_transaction.html
+┃ ┃ ┃   ┣ 📜categories.html
+┃ ┃ ┃   ┣ 📜manage_categories.html
+┃ ┃ ┃   ┣ 📜transaction_detail.html
+┃ ┃ ┃   ┣ 📜transaction_list.html
+┃ ┃ ┃   ┗ 📜transaction_table.html
+┃ ┃ ┣ 📂tests
+┃ ┃ ┃ ┗ 📜test_transactions_views.py
+┃ ┃ ┣ 📜__init__.py
+┃ ┃ ┣ 📜admin.py
+┃ ┃ ┣ 📜apps.py
+┃ ┃ ┣ 📜forms.py
+┃ ┃ ┣ 📜models.py
+┃ ┃ ┣ 📜urls.py
+┃ ┃ ┣ 📜utils.py
+┃ ┃ ┗ 📜views.py
+┃ ┣ 📂users
+┃ ┃ ┣ 📂migrations
+┃ ┃ ┣ 📂static
+┃ ┃ ┃ ┣ 📂css
+┃ ┃ ┃ ┗ 📂js
+┃ ┃ ┣ 📂templates
+┃ ┃ ┃ ┗ 📂users
+┃ ┃ ┃   ┣ 📜dashboard.html
+┃ ┃ ┃   ┣ 📜login.html
+┃ ┃ ┃   ┗ 📜signup.html
+┃ ┃ ┣ 📂tests
+┃ ┃ ┃ ┗ 📜test_users_views.py
+┃ ┃ ┣ 📜__init__.py
+┃ ┃ ┣ 📜admin.py
+┃ ┃ ┣ 📜apps.py
+┃ ┃ ┣ 📜forms.py
+┃ ┃ ┣ 📜models.py
+┃ ┃ ┣ 📜urls.py
+┃ ┃ ┗ 📜views.py
+┃ ┣ 📜manage.py
+┃ ┗ 📜pytest.ini
+┣ 📂project_team_managment
+┃ ┣ 📂representation
+┃ ┃ ┣ 📂detailed
+┃ ┃ ┃ ┣ 📂database
+┃ ┃ ┃ ┃ ┣ 📜database schema.txt
+┃ ┃ ┃ ┃ ┗ 📜database_description.txt
+┃ ┃ ┃ ┗ 📂functionality_desription
+┃ ┃ ┃   ┣ 📜analytics.txt
+┃ ┃ ┃   ┣ 📜budgets.txt
+┃ ┃ ┃   ┣ 📜transactions.txt
+┃ ┃ ┃   ┣ 📜users copy.txt
+┃ ┃ ┃   ┗ 📜users.txt
+┃ ┃ ┗ 📂general
+┃ ┃   ┗ 📜short_project_documentation.txt
+┃ ┣ 📂task
+┃ ┗ 📜workers.txt
+┣ 📂venv
+┣ 📜.gitignore
+┣ 📜LICENSE
+┗ 📜README.md

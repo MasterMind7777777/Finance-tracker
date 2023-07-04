@@ -1,0 +1,37 @@
+Analytics View:
+
+analytics_view: Generates analytics for expenses, income, and budgets by categorising transactions. Renders the analytics template with calculated values.
+fetch_sticky_notes: Retrieves all sticky notes and returns them as a JSON response.
+create_or_add_to_board: Creates a new board or adds a sticky note to an existing one, returning a success message and the board ID.
+fetch_board_sticky_notes: Retrieves the sticky notes associated with a specific board.
+delete_sticky_note_from_board: Deletes a specific sticky note from a board, returning a success message.
+save_board: Saves the state of a board, returning a success message and the board ID.
+fetch_user_boards: Retrieves the boards associated with a specific user.
+Budgets View:
+
+budget_overview: Provides an overview of the user's budget and handles the submission of the category budget form.
+delete_budget: Deletes a specific category budget.
+Transactions View:
+
+add_transaction: Handles the creation of a new transaction.
+delete_transaction: Deletes a specific transaction.
+categories_view: Fetches all categories and returns them as a JSON response.
+manage_categories: Allows the user to manage categories, including form submission and creating a new category.
+delete_category: Deletes a specific category.
+transaction_list: Displays a list of transactions and handles submission of the main transaction form.
+transaction_detail: Displays the details of a specific transaction, handles the submission of the subtransaction form.
+Users View:
+
+signup: Handles user signup.
+user_login: Handles user login.
+user_logout: Logs out the current user.
+dashboard: Displays the user dashboard, requires user to be authenticated.
+DB:
+
+Analytics App: StickyNoteContent, StickyNote, Board, and BoardStickyNote models.
+Budgets App: CategoryBudget model.
+Transactions App: Category and Transaction models.
+Users App: User, UserProfile, and SocialMediaAccount models.
+DB Description:
+
+The application handles user management through the User and UserProfile models, transaction management through the Transaction and Category models, budget management via the CategoryBudget model, analytics through StickyNoteContent, StickyNote, Board, and BoardStickyNote models, and social media integration through the SocialMediaAccount model.
