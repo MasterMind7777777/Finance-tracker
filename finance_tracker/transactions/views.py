@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.http import HttpResponseForbidden
 from .models import Transaction
 from .models import Category
 from .forms import CategoryForm, TransactionForm
@@ -9,7 +11,7 @@ from django.http import JsonResponse
 from transactions.utils import CategoryEncoder
 from django.core import serializers
 
-
+@login_required
 def add_transaction(request):
     if request.method == 'POST':
         form = TransactionForm(request.POST)
@@ -29,12 +31,16 @@ def add_transaction(request):
     
     return render(request, 'transactions/add_transaction.html', {'form': form, 'error_message': error_message})
 
-
+@login_required
 @require_POST
 def delete_transaction(request, transaction_id):
     try:
         # Get the transaction object
         transaction = get_object_or_404(Transaction, id=transaction_id)
+
+        # Check if the transaction belongs to the current user
+        if transaction.user != request.user:
+            return HttpResponseForbidden("You don't have permission to delete this transaction.")
 
         # Perform the delete operation
         transaction.delete()
@@ -45,7 +51,7 @@ def delete_transaction(request, transaction_id):
         error_message = str(e)
         return render(request, 'error.html', {'error_message': error_message})
 
-
+@login_required
 def categories_view(request):
     try:
         categories = Category.objects.all()
@@ -61,6 +67,7 @@ def categories_view(request):
         return render(request, 'error.html', {'error_message': error_message})
 
 
+@login_required
 def manage_categories(request):
     try:
         categories = Category.objects.filter(user=request.user)
@@ -83,6 +90,7 @@ def manage_categories(request):
         error_message = str(e)
         return render(request, 'error.html', {'error_message': error_message})
 
+@login_required
 @require_POST
 def delete_category(request, category_id):
     try:
@@ -93,7 +101,7 @@ def delete_category(request, category_id):
         error_message = str(e)
         return render(request, 'error.html', {'error_message': error_message})
 
-
+@login_required
 def transaction_list(request):
     try:
         # Fetch all transactions for the current user
@@ -161,6 +169,7 @@ def transaction_list(request):
         error_message = str(e)
         return render(request, 'error.html', {'error_message': error_message})
 
+@login_required
 def transaction_detail(request, pk):
     try:
         transaction = get_object_or_404(Transaction, pk=pk)

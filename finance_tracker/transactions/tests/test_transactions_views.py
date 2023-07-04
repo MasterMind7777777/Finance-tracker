@@ -20,6 +20,12 @@ def user(db):
     category = Category.objects.create(name='Test Category', user=user)
     return user
 
+@pytest.fixture
+def user2(db):
+    user = User.objects.create_user(username='testuser2', password='123456')
+    category = Category.objects.create(name='Test Category2', user=user2)
+    return user2
+
 def test_add_transaction_view(client, user):
     client.login(username='testuser', password='12345')
     category = Category.objects.first()
@@ -84,3 +90,138 @@ def test_transaction_list_view(client, user):
     assert response.status_code == 200
     # Assert additional logic based on the response content or data returned from the view
     # For example, you can check if the response contains specific transaction data.
+
+@pytest.mark.django_db
+def test_add_transaction_view_with_invalid_data(client, user):
+    client.login(username='testuser', password='12345')
+    response = client.post(reverse('transactions:add_transaction'), {
+        'title': '',  # Empty title
+        'description': 'This is a test transaction.',
+        'amount': 100.0,
+        'category': 1,
+        'date': '2023-07-01',
+    })
+    assert response.status_code == 200
+    assert b"Invalid form submission." in response.content
+
+@pytest.mark.django_db
+def test_add_transaction_view_without_login(client):
+    response = client.post(reverse('transactions:add_transaction'), {
+        'title': 'Test Transaction',
+        'description': 'This is a test transaction.',
+        'amount': 100.0,
+        'category': 1,
+        'date': '2023-07-01',
+    })
+    assert 'login' in response.url  # Check that the user is redirected to the login page
+
+@pytest.mark.django_db
+def test_delete_transaction_view_with_other_user(client, user):
+    other_user = User.objects.create_user(username='otheruser', password='12345')
+    client.login(username='otheruser', password='12345')
+    transaction = Transaction.objects.create(
+        title='Test Transaction',
+        description='This is a test transaction.',
+        amount=100.0,
+        category=Category.objects.first(),
+        date=make_aware(datetime.datetime(2023, 7, 1)),
+        user=user
+    )
+    response = client.post(reverse('transactions:delete_transaction', args=[transaction.id]))
+    assert response.status_code == 403  # Check that the user gets a forbidden response
+
+@pytest.mark.django_db
+def test_transaction_detail_view(client, user):
+    client.login(username='testuser', password='12345')
+    transaction = Transaction.objects.create(
+        title='Test Transaction',
+        description='This is a test transaction.',
+        amount=100.0,
+        category=Category.objects.first(),
+        date=make_aware(datetime.datetime(2023, 7, 1)),
+        user=user
+    )
+    response = client.get(reverse('transactions:transaction_detail', args=[transaction.id]))
+    assert response.status_code == 200
+    assert b'Test Transaction' in response.content
+
+@pytest.mark.django_db
+def test_transaction_list_view_with_filters_and_sorting(client, user):
+    client.login(username='testuser', password='12345')
+    category = Category.objects.create(name='Test Category 2', user=user)
+    transaction1 = Transaction.objects.create(
+        title='Test Transaction 1',
+        description='This is a test transaction.',
+        amount=100.0,
+        category=Category.objects.first(),
+        date=make_aware(datetime.datetime(2023, 7, 1)),
+        user=user
+    )
+    transaction2 = Transaction.objects.create(
+        title='Test Transaction 2',
+        description='This is another testtransaction.',
+        amount=200.0,
+        category=category,
+        date=make_aware(datetime.datetime(2023, 7, 2)),
+        user=user
+    )
+    
+    # Test descending sorting
+    response = client.get(reverse('transactions:transaction_list'), {
+        'filter_by': 'category',
+        'filter_value': 'Test Category 2',
+        'sort_field': 'amount',
+        'sort_order': 'desc',
+    })
+    assert response.status_code == 200
+    assert b'Test Transaction 2' in response.content
+    assert b'Test Transaction 1' not in response.content
+    
+    # Test ascending sorting
+    response = client.get(reverse('transactions:transaction_list'), {
+        'filter_by': 'category',
+        'filter_value': 'Test Category 2',
+        'sort_field': 'amount',
+        'sort_order': 'asc',
+    })
+    assert response.status_code == 200
+    
+    # Check descending sorting
+    transactions_descending = response.context['transactions']
+    amounts_descending = [transaction.amount for transaction in transactions_descending]
+    assert amounts_descending == sorted(amounts_descending, reverse=True)
+    
+    # Check ascending sorting
+    response = client.get(reverse('transactions:transaction_list'), {
+        'filter_by': 'category',
+        'sort_field': 'amount',
+        'sort_order': 'asc',
+    })
+    assert response.status_code == 200
+    transactions_ascending = response.context['transactions']
+    amounts_ascending = [transaction.amount for transaction in transactions_ascending]
+    assert amounts_ascending == sorted(amounts_ascending)
+
+
+@pytest.mark.django_db
+def test_transaction_detail_view_with_subtransaction_creation(client, user):
+    client.login(username='testuser', password='12345')
+    transaction = Transaction.objects.create(
+        title='Test Transaction',
+        description='This is a test transaction.',
+        amount=100.0,
+        category=Category.objects.first(),
+        date=make_aware(datetime.datetime(2023, 7, 1)),
+        user=user
+    )
+    response = client.post(reverse('transactions:transaction_detail', args=[transaction.id]), {
+        'title': 'Test Subtransaction',
+        'description': 'This is a test subtransaction.',
+        'amount': 50.0,
+        'category': transaction.category.id,
+        'date': '2023-07-01',
+    })
+    assert response.status_code == 200
+    response_data = json.loads(response.content)
+    assert response_data['title'] == 'Test Subtransaction'
+    assert Transaction.objects.filter(title='Test Subtransaction').exists()
