@@ -225,3 +225,18 @@ def test_transaction_detail_view_with_subtransaction_creation(client, user):
     response_data = json.loads(response.content)
     assert response_data['title'] == 'Test Subtransaction'
     assert Transaction.objects.filter(title='Test Subtransaction').exists()
+
+
+# ToDo
+# This feature will analyze the user's past transactions 
+# and use in future(machine learning algorithms) it will give most used 
+# transactions for now to predict future transactions. 
+# It can be useful for users who want to automate their transaction recording process.
+def test_transaction_recommendation_feature(client, user):
+    client.force_login(user)
+    response = client.post('/transactions/add/', {'category': 'Groceries', 'amount': 100})
+    assert response.status_code == 200
+
+    recommendations = client.get('/transactions/recommendations/')
+    assert recommendations.status_code == 200
+    assert 'Groceries' in [r['category'] for r in recommendations.context['recommendations']]

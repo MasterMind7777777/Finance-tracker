@@ -2,8 +2,9 @@ import pytest
 from transactions.models import Category, Transaction
 from budgets.models import CategoryBudget
 from django.urls import reverse
-from django.test import Client
+from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
+
 
 User = get_user_model()
 
@@ -56,3 +57,36 @@ def test_delete_budget(client, create_user, create_category, create_budget):
 
     assert response.status_code == 302
     assert CategoryBudget.objects.filter(id=create_budget.id).count() == 0
+
+# ToDo 
+# This feature will monitor the user's spending in different budget categories. 
+# If the user goes over the budget in any category, an alert will be generated and 
+# can be viewed in the 'Budget Alerts' section.
+def test_budget_alerts(client, create_user):
+    client.force_login(create_user)
+    # Create an instance of APIClient
+    client = APIClient()
+
+    # Force login using create_user
+    client.force_authenticate(user=create_user)
+
+    # Create a category
+    category_data = {'name': 'Groceries', 'type': 'expense'}
+    category_response = client.post(reverse('api_v1:category-list'), category_data, format='json')
+    assert category_response.status_code == 201
+
+    # Send a POST request to create a budget
+    budget_data = {'category': category_response.data['id'], 'budget_limit': 100}
+    budget_response = client.post(reverse('api_v1:budget-list'), budget_data, format='json')
+    assert budget_response.status_code == 201
+
+    # Send a POST request to add a transaction
+    transaction_data = {'title': 'test transaction','category': category_response.data['id'], 'amount': 101}
+    transaction_response = client.post(reverse('api_v1:transaction-list'), transaction_data, format='json')
+    print(transaction_response.json())
+    assert transaction_response.status_code == 201
+
+    alerts = client.get(reverse('api_v1:budget-alerts'))
+    assert alerts.status_code == 200
+    print(alerts.json())
+    assert 'Groceries' in alerts.json()['over_limit_categories']

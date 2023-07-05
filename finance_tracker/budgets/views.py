@@ -5,6 +5,7 @@ from .models import CategoryBudget
 from transactions.models import Transaction, Category
 from django.http import HttpResponse
 
+
 def budget_overview(request):
     try:
         # Retrieve all transactions for the current user
