@@ -1,37 +1,35 @@
-Analytics View:
+Analytics:
 
-analytics_view: Generates analytics for expenses, income, and budgets by categorising transactions. Renders the analytics template with calculated values.
-fetch_sticky_notes: Retrieves all sticky notes and returns them as a JSON response.
-create_or_add_to_board: Creates a new board or adds a sticky note to an existing one, returning a success message and the board ID.
-fetch_board_sticky_notes: Retrieves the sticky notes associated with a specific board.
-delete_sticky_note_from_board: Deletes a specific sticky note from a board, returning a success message.
-save_board: Saves the state of a board, returning a success message and the board ID.
-fetch_user_boards: Retrieves the boards associated with a specific user.
-Budgets View:
+analytics_view: Displays user's financial analytics.
+fetch_sticky_notes: Retrieves all sticky notes as JSON.
+create_or_add_to_board: Creates or modifies a board.
+fetch_board_sticky_notes: Fetches sticky notes for a specific board.
+delete_sticky_note_from_board: Removes a sticky note from a board.
+save_board: Stores the current state of a board.
+fetch_user_boards: Retrieves boards for a specific user.
+Budgets:
 
-budget_overview: Provides an overview of the user's budget and handles the submission of the category budget form.
-delete_budget: Deletes a specific category budget.
-Transactions View:
+budget_overview: Shows a user's budget overview.
+delete_budget: Erases a specific budget category.
+Transactions:
 
-add_transaction: Handles the creation of a new transaction.
-delete_transaction: Deletes a specific transaction.
-categories_view: Fetches all categories and returns them as a JSON response.
-manage_categories: Allows the user to manage categories, including form submission and creating a new category.
-delete_category: Deletes a specific category.
-transaction_list: Displays a list of transactions and handles submission of the main transaction form.
-transaction_detail: Displays the details of a specific transaction, handles the submission of the subtransaction form.
-Users View:
+add_transaction: Creates a new transaction.
+delete_transaction: Erases a specific transaction.
+categories_view: Retrieves all categories as JSON.
+manage_categories: Manages categories, including form submissions and creating new ones.
+delete_category: Erases a specific category.
+transaction_list: Displays a list of transactions.
+transaction_detail: Shows specific transaction details.
+forecast_expenses: Estimates a user's monthly expenses based on average daily spend.
+Users:
 
-signup: Handles user signup.
-user_login: Handles user login.
-user_logout: Logs out the current user.
-dashboard: Displays the user dashboard, requires user to be authenticated.
-DB:
+signup: Manages user registration.
+user_login: Handles user sign-in.
+user_logout: Manages user sign-out.
+dashboard: Displays user dashboard.
+Database Models:
 
-Analytics App: StickyNoteContent, StickyNote, Board, and BoardStickyNote models.
-Budgets App: CategoryBudget model.
-Transactions App: Category and Transaction models.
-Users App: User, UserProfile, and SocialMediaAccount models.
-DB Description:
-
-The application handles user management through the User and UserProfile models, transaction management through the Transaction and Category models, budget management via the CategoryBudget model, analytics through StickyNoteContent, StickyNote, Board, and BoardStickyNote models, and social media integration through the SocialMediaAccount model.
+Analytics App: Manages analytics with StickyNoteContent, StickyNote, Board, and BoardStickyNote models.
+Budgets App: Uses CategoryBudget model for budget management.
+Transactions App: Handles transactions with Category and Transaction models.
+Users App: Manages user profiles and social media integration with User, UserProfile, and SocialMediaAccount models.
