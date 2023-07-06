@@ -58,10 +58,6 @@ def test_delete_budget(client, create_user, create_category, create_budget):
     assert response.status_code == 302
     assert CategoryBudget.objects.filter(id=create_budget.id).count() == 0
 
-# ToDo 
-# This feature will monitor the user's spending in different budget categories. 
-# If the user goes over the budget in any category, an alert will be generated and 
-# can be viewed in the 'Budget Alerts' section.
 def test_budget_alerts(client, create_user):
     client.force_login(create_user)
     # Create an instance of APIClient

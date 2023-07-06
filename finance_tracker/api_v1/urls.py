@@ -12,6 +12,7 @@ router.register(r'transactions', TransactionViewSet, basename='transaction')
 
 urlpatterns = [
     path('budgets/alerts/', CategoryBudgetViewSet.as_view({'get': 'alerts'}), name='budget-alerts'),
+    path('transactions/recommendations/', TransactionViewSet.as_view({'get': 'recommendations'}), name='transaction-recommendations'),
     # other paths...
 ]
 

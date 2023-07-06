@@ -7,6 +7,8 @@ from budgets.models import CategoryBudget
 from transactions.models import Category, Transaction
 from transactions.models import Transaction
 from .serializers import CategoryBudgetSerializer, CategorySerializer, TransactionSerializer
+from django.db.models import Count
+from rest_framework.decorators import action
 
 class CategoryBudgetViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
@@ -54,5 +56,34 @@ class TransactionViewSet(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
 
     def create(self, request, *args, **kwargs):
-        request.data['user'] = request.user.id
-        return super().create(request, *args, **kwargs)
+        data = request.data.copy()  # create mutable copy
+        data['user'] = request.user.id
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    
+    @action(detail=False, methods=['GET'])
+    def recommendations(self, request):
+        user = request.user
+        num_recommendations = int(request.query_params.get('num_recommendations', 5))  # Default to 5 recommendations
+        
+        # Get category counts first
+        category_counts = self.queryset.filter(user=user).exclude(category=None).values('category').annotate(count=Count('category')).order_by('-count')
+        
+        most_used_category = category_counts.first().get('category') if category_counts else None
+
+        # Then get the recommendations based on the most used categories
+        if most_used_category:
+            recommendations = self.queryset.filter(user=user, category=most_used_category)[:num_recommendations]
+        else:
+            recommendations = self.queryset.none()  # Empty queryset
+
+        serializer = self.get_serializer(recommendations, many=True)
+        data = {
+            'recommendations': serializer.data,
+            'most_used_category': most_used_category,
+        }
+        return Response(data)

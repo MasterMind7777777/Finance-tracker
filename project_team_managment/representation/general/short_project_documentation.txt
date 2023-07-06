@@ -1,5 +1,4 @@
 Analytics:
-
 analytics_view: Displays user's financial analytics.
 fetch_sticky_notes: Retrieves all sticky notes as JSON.
 create_or_add_to_board: Creates or modifies a board.
@@ -7,12 +6,13 @@ fetch_board_sticky_notes: Fetches sticky notes for a specific board.
 delete_sticky_note_from_board: Removes a sticky note from a board.
 save_board: Stores the current state of a board.
 fetch_user_boards: Retrieves boards for a specific user.
-Budgets:
 
+Budgets:
 budget_overview: Shows a user's budget overview.
 delete_budget: Erases a specific budget category.
-Transactions:
+alerts: generates a list of categories where the user's spending has exceeded their established budget limits.
 
+Transactions:
 add_transaction: Creates a new transaction.
 delete_transaction: Erases a specific transaction.
 categories_view: Retrieves all categories as JSON.
@@ -21,14 +21,15 @@ delete_category: Erases a specific category.
 transaction_list: Displays a list of transactions.
 transaction_detail: Shows specific transaction details.
 forecast_expenses: Estimates a user's monthly expenses based on average daily spend.
-Users:
+recommendations: Suggests transactions to the user based on their most frequently used category.
 
+Users:
 signup: Manages user registration.
 user_login: Handles user sign-in.
 user_logout: Manages user sign-out.
 dashboard: Displays user dashboard.
-Database Models:
 
+Database Models:
 Analytics App: Manages analytics with StickyNoteContent, StickyNote, Board, and BoardStickyNote models.
 Budgets App: Uses CategoryBudget model for budget management.
 Transactions App: Handles transactions with Category and Transaction models.

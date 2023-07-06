@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.test import Client
 from django.contrib.auth import get_user_model
 from transactions.models import Transaction, Category
+from rest_framework.test import APIClient
 
 User = get_user_model()
 
@@ -226,17 +227,43 @@ def test_transaction_detail_view_with_subtransaction_creation(client, user):
     assert response_data['title'] == 'Test Subtransaction'
     assert Transaction.objects.filter(title='Test Subtransaction').exists()
 
-
-# ToDo
-# This feature will analyze the user's past transactions 
-# and use in future(machine learning algorithms) it will give most used 
-# transactions for now to predict future transactions. 
-# It can be useful for users who want to automate their transaction recording process.
 def test_transaction_recommendation_feature(client, user):
-    client.force_login(user)
-    response = client.post('/transactions/add/', {'category': 'Groceries', 'amount': 100})
-    assert response.status_code == 200
+    client = APIClient()
+    client.force_authenticate(user=user)
 
-    recommendations = client.get('/transactions/recommendations/')
-    assert recommendations.status_code == 200
-    assert 'Groceries' in [r['category'] for r in recommendations.context['recommendations']]
+    # Create a category
+    categories_data = [
+        {'name': 'Groceries', 'type': 'expense'},
+        {'name': 'test', 'type': 'expense'}
+        ]
+    categories_ids = []
+    for category_data in categories_data:
+        category_response = client.post(reverse('api_v1:category-list'), category_data, format='json')
+        assert category_response.status_code == 201
+        categories_ids.append(category_response.data['id'])  # Store category id
+
+    transaction_ids = []  # Keep track of created transaction ids
+
+    # Create multiple transactions
+    transactions_data = [
+        {'title': 'Transaction 1', 'category': categories_ids[0], 'amount': 100},
+        {'title': 'Transaction 2', 'category': categories_ids[1], 'amount': 200},
+        {'title': 'Transaction 3', 'category': categories_ids[1], 'amount': 150},
+        # Add more transactions as needed
+    ]
+
+    for transaction_data in transactions_data:
+        transaction_response = client.post(reverse('api_v1:transaction-list'), transaction_data, format='json')
+        assert transaction_response.status_code == 201
+        transaction_ids.append(transaction_response.data['id'])  # Store transaction id
+
+
+    # Check recommendations with different num_recommendations values
+    num_recommendations_values = [2, 3, 5]  # Example values
+    for num_recommendations in num_recommendations_values:
+        recommendations_url = reverse('api_v1:transaction-recommendations') + f'?num_recommendations={num_recommendations}'
+        recommendations_response = client.get(recommendations_url)
+        print(recommendations_response.json())
+        assert recommendations_response.status_code == 200
+        assert all(transaction['id'] in transaction_ids for transaction in recommendations_response.data['recommendations'])
+        assert recommendations_response.data['most_used_category'] == categories_ids[1]  # Ensure the 'most_used_category' matches the category used
