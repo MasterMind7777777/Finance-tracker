@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'transactions',
     'budgets',
     'analytics',
+    'capital',
     'api_v1',
 
     #Third party apps
@@ -32,6 +33,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap4',
     'tempus_dominus',
+    'django_filters',
+    'django_extensions'
 ]
 
 MIDDLEWARE = [
@@ -99,6 +102,9 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
     ],
 }
 
