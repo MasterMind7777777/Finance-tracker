@@ -1,248 +1,98 @@
 
-# Financial Management System API
-
-The Financial Management System API provides a set of endpoints to manage and track financial activities. It offers functionalities for analytics, budgets, transactions, and user management. This document outlines the available endpoints and their functionalities.
-
-## Table of Contents
-
--   [Analytics](https://chat.openai.com/#analytics)
-    -   [Analytics View](https://chat.openai.com/#analytics-view)
-    -   [Fetch Sticky Notes](https://chat.openai.com/#fetch-sticky-notes)
-    -   [Create or Add to Board](https://chat.openai.com/#create-or-add-to-board)
-    -   [Fetch Board Sticky Notes](https://chat.openai.com/#fetch-board-sticky-notes)
-    -   [Delete Sticky Note from Board](https://chat.openai.com/#delete-sticky-note-from-board)
-    -   [Save Board](https://chat.openai.com/#save-board)
-    -   [Fetch User Boards](https://chat.openai.com/#fetch-user-boards)
-    -   [Savings Opportunities](https://chat.openai.com/#savings-opportunities)
-    -   [Create Financial Health](https://chat.openai.com/#create-financial-health)
--   [Budgets](https://chat.openai.com/#budgets)
-    -   [Budget Overview](https://chat.openai.com/#budget-overview)
-    -   [Delete Budget](https://chat.openai.com/#delete-budget)
-    -   [Category Budget ViewSet](https://chat.openai.com/#category-budget-viewset)
--   [Transactions](https://chat.openai.com/#transactions)
-    -   [Add Transaction](https://chat.openai.com/#add-transaction)
-    -   [Delete Transaction](https://chat.openai.com/#delete-transaction)
-    -   [Categories View](https://chat.openai.com/#categories-view)
-    -   [Manage Categories](https://chat.openai.com/#manage-categories)
-    -   [Delete Category](https://chat.openai.com/#delete-category)
-    -   [Transaction List](https://chat.openai.com/#transaction-list)
-    -   [Transaction Detail](https://chat.openai.com/#transaction-detail)
-    -   [Forecast Expenses](https://chat.openai.com/#forecast-expenses)
-    -   [Category ViewSet](https://chat.openai.com/#category-viewset)
-    -   [Transaction ViewSet](https://chat.openai.com/#transaction-viewset)
--   [Users](https://chat.openai.com/#users)
-    -   [Signup](https://chat.openai.com/#signup)
-    -   [User Login](https://chat.openai.com/#user-login)
-    -   [User Logout](https://chat.openai.com/#user-logout)
-    -   [Dashboard](https://chat.openai.com/#dashboard)
-    -   [User ViewSet](https://chat.openai.com/#user-viewset)
--   [Capital](https://chat.openai.com/#capital)
-    -   [Saving Goal ViewSet](https://chat.openai.com/#saving-goal-viewset)
--   [Database Models](https://chat.openai.com/#database-models)
+### Analytics:
 
-## Analytics
+analytics_view: Displays user's financial analytics.
 
-### Analytics View
+fetch_sticky_notes: Retrieves all sticky notes as JSON.
 
--   Endpoint: `/analytics_view`
--   Method: GET
--   Description: Displays the user's financial analytics.
+create_or_add_to_board: Creates or modifies a board.
 
-### Fetch Sticky Notes
+fetch_board_sticky_notes: Fetches sticky notes for a specific board.
 
--   Endpoint: `/fetch_sticky_notes`
--   Method: GET
--   Description: Retrieves all sticky notes as JSON.
+delete_sticky_note_from_board: Removes a sticky note from a board.
 
-### Create or Add to Board
+save_board: Stores the current state of a board.
 
--   Endpoint: `/create_or_add_to_board`
--   Method: POST
--   Description: Creates or modifies a board.
+fetch_user_boards: Retrieves boards for a specific user.
 
-### Fetch Board Sticky Notes
+savings_opportunities: Identifies saving opportunities and association rules for a specific expense category.
 
--   Endpoint: `/fetch_board_sticky_notes`
--   Method: GET
--   Description: Fetches sticky notes for a specific board.
+create_financial_health: Calculates a financial health score based on various factors and provides personalized tips for improvement.
 
-### Delete Sticky Note from Board
+  
 
--   Endpoint: `/delete_sticky_note_from_board`
--   Method: POST
--   Description: Removes a sticky note from a board.
+###  Budgets:
 
-### Save Board
+budget_overview: Shows a user's budget overview.
 
--   Endpoint: `/save_board`
--   Method: POST
--   Description: Stores the current state of a board.
+delete_budget: Erases a specific budget category.
 
-### Fetch User Boards
+CategoryBudgetViewSet: CRUD operations +
 
--   Endpoint: `/fetch_user_boards`
--   Method: GET
--   Description: Retrieves boards for a specific user.
+alerts: Generates a list of categories where the user's spending has exceeded their established budget limits. Also create PushNotification
 
-### Savings Opportunities
+  
 
--   Endpoint: `/savings_opportunities`
--   Method: GET
--   Description: Identifies saving opportunities and association rules for a specific expense category.
+###  Transactions:
 
-### Create Financial Health
+add_transaction: Creates a new transaction.
 
--   Endpoint: `/create_financial_health`
--   Method: POST
--   Description: Calculates a financial health score based on various factors and provides personalized tips for improvement.
+delete_transaction: Erases a specific transaction.
 
-## Budgets
+categories_view: Retrieves all categories as JSON.
 
-### Budget Overview
+manage_categories: Manages categories, including form submissions and creating new ones.
 
--   Endpoint: `/budget_overview`
--   Method: GET
--   Description: Shows a user's budget overview.
+delete_category: Erases a specific category.
 
-### Delete Budget
+transaction_list: Displays a list of transactions.
 
--   Endpoint: `/delete_budget`
--   Method: POST
--   Description: Erases a specific budget category.
+transaction_detail: Shows specific transaction details.
 
-### Category Budget ViewSet
+forecast_expenses: Estimates a user's monthly expenses based on average daily spend.
 
--   Endpoint: `/category_budgets`
--   Method: CRUD operations
--   Description: Manages category budgets. Allows creating, updating, retrieving, and deleting category budgets. Generates alerts for categories where the user's spending has exceeded their budget limits. Also creates Push Notifications.
+CategoryViewSet: CRUD operations +
 
-## Transactions
+compare_spending: Calculates and compares the spending of a user and their friends within a specified category over a given period.
 
-### Add Transaction
+TransactionViewSet: CRUD operations +
 
--   Endpoint: `/add_transaction`
--   Method: POST
--   Description: Creates a new transaction.
+recommendations: Suggests transactions to the user based on their most frequently used category.
 
-### Delete Transaction
+assign_category: Uses keywords in a transaction's description and name to categorize the transaction automatically.
 
--   Endpoint: `/delete_transaction`
--   Method: POST
--   Description: Erases a specific transaction.
+apply_recurring_transactions: create transactions planed by RecurringTransaction.
 
-### Categories View
+  
 
--   Endpoint: `/categories_view`
--   Method: GET
--   Description: Retrieves all categories as JSON.
+###  Users:
 
-### Manage Categories
+signup: Manages user registration.
 
--   Endpoint: `/manage_categories`
--   Method: POST
--   Description: Manages categories, including form submissions and creating new ones.
+user_login: Handles user sign-in.
 
-### Delete Category
+user_logout: Manages user sign-out.
 
--   Endpoint: `/delete_category`
--   Method: POST
--   Description: Erases a specific category.
+dashboard: Displays user dashboard.
 
-### Transaction List
+UserViewSet: CRUD operations for users and user profiles, social media accounts, and friend requests.
 
--   Endpoint: `/transaction_list`
--   Method: GET
--   Description: Displays a list of transactions.
+  
 
-### Transaction Detail
+###  Capital:
 
--   Endpoint: `/transaction_detail`
--   Method: GET
--   Description: Shows specific transaction details.
+SavingGoalViewSet: manages user-specific saving goals, supports adding/removing users and categories, ensuring creator's modification rights.
 
-### Forecast Expenses
+  
 
--   Endpoint: `/forecast_expenses`
--   Method: GET
--   Description: Estimates a user's monthly expenses based on average daily spend.
+###  Database Models:
 
-### Category ViewSet
+Analytics App: Manages analytics with StickyNoteContent, StickyNote, Board, and BoardStickyNote models.
 
--   Endpoint: `/categories`
--   Method: CRUD operations
--   Description: Manages categories. Allows creating, updating, retrieving, and deleting categories. Calculates and compares the spending of a user and their friends within a specified category over a given period.
+Capital App: Enables collaborative saving goals tracking using the versatile SavingGoal model.
 
-### Transaction ViewSet
+Budgets App: Uses CategoryBudget model for budget management. Multiple users can share budget.
 
--   Endpoint: `/transactions`
--   Method: CRUD operations
--   Description: Manages transactions. Allows creating, updating, retrieving, and deleting transactions. Provides recommendations for transactions based on the user's most frequently used category. Automatically categorizes transactions using keywords in their description and name. Supports creating transactions planned by RecurringTransaction.
+Transactions App: Handles transactions with Category and Transaction models, RecurringTransaction.
 
-## Users
-
-### Signup
-
--   Endpoint: `/signup`
--   Method: POST
--   Description: Manages user registration.
-
-### User Login
-
--   Endpoint: `/user_login`
--   Method: POST
--   Description: Handles user sign-in.
-
-### User Logout
-
--   Endpoint: `/user_logout`
--   Method: POST
--   Description: Manages user sign-out.
-
-### Dashboard
-
--   Endpoint: `/dashboard`
--   Method: GET
--   Description: Displays the user dashboard.
-
-### User ViewSet
-
--   Endpoint: `/users`
--   Method: CRUD operations
--   Description: Manages users, user profiles, social media accounts, and friend requests. Allows creating, updating, retrieving, and deleting users and their associated data.
-
-## Capital
-
-### Saving Goal ViewSet
-
--   Endpoint: `/saving_goals`
--   Method: CRUD operations
--   Description: Manages user-specific saving goals. Supports adding/removing users and categories and ensures the creator's modification rights.
-
-## Database Models
-
-The Financial Management System API utilizes the following database models:
-
--   Analytics App:
-    
-    -   StickyNoteContent
-    -   StickyNote
-    -   Board
-    -   BoardStickyNote
--   Capital App:
-    
-    -   SavingGoal
--   Budgets App:
-    
-    -   CategoryBudget
--   Transactions App:
-    
-    -   Category
-    -   Transaction
-    -   RecurringTransaction
--   Users App:
-    
-    -   User
-    -   UserProfile
-    -   SocialMediaAccount
-    -   PushNotification
-    -   FriendRequest
+Users App: Manages user profiles and social media integration with User, UserProfile, SocialMediaAccount, PushNotification, FriendRequest.
