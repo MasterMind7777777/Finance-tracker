@@ -1,8 +1,14 @@
+import random
 import pytest
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from analytics.models import Board, StickyNote, BoardStickyNote, StickyNoteContent
+from analytics.utils import create_financial_health
+from analytics.models import FinancialHealth
+from transactions.models import Transaction, Category
 import json
+from rest_framework.test import APIClient
 
 User = get_user_model()
 
@@ -182,3 +188,162 @@ def test_create_or_add_to_board_with_invalid_sticky_note_id(client, user, board)
         'given_title': 'Test Given Title',
     })
     assert response.status_code == 404  # Expect a 404 status code because the sticky note does not exist
+
+@pytest.mark.django_db
+def test_savings_opportunities(client, user):
+    # Create test user and transactions
+    client.force_login(user)
+    # Create an instance of APIClient
+    client = APIClient()
+    # Force login using create_user
+    client.force_authenticate(user=user)
+
+    category = Category.objects.create(name="entertainment", user=user)
+
+    num_of_test_transactions = 8000
+    transaction_names = [f"transaction{i}" for i in range(1, num_of_test_transactions + 1)]
+
+
+    # Set the configuration parameters
+    tomato_flight_percentage = 0.5  # Percentage of times "tomato" is followed by "flight"
+
+    # Create frequent transactions
+    frequent_transactions = [
+        Transaction(title="movie", user=user, category=category, amount=70),
+        Transaction(title="burger", user=user, category=category, amount=50)
+    ] * 2000
+
+    # Create additional transactions with "flight" or "tomato" according to the pattern
+    additional_transactions = []
+    num_loops = 2000  # Number of loops for inserting "flight" or "tomato"
+
+    chosen_title = 'tomato'
+    prev_chosen_title = 'flight'
+    for _ in range(num_loops):
+        additional_transactions.append(Transaction(title=chosen_title, user=user, category=category, amount=random.randint(50, 200)))
+
+        # Determine the next title based on the percentage
+        if random.random() > tomato_flight_percentage:
+            chosen_title = random.sample(transaction_names, 1)
+            transaction_names.remove(chosen_title[0])
+        elif chosen_title == 'tomato':
+            chosen_title = 'flight'
+            prev_chosen_title = 'tomato'
+        elif chosen_title == 'flight':
+            chosen_title = 'tomato'
+            prev_chosen_title = 'flight'
+        else:
+            chosen_title = prev_chosen_title
+
+
+    # Create infrequent transactions with random amounts of transactions
+    infrequent_transactions = []
+    for _ in range(10):
+        infrequent_transactions.extend([
+            Transaction(title=random.choice(transaction_names), user=user, category=category, amount=random.randint(10, 100))
+            for _ in range(random.randint(1, 5))
+        ])
+
+    # Add all transactions to the database
+    Transaction.objects.bulk_create(frequent_transactions + additional_transactions + infrequent_transactions)
+
+    url = reverse('api_v1:transaction-savings_opportunities', kwargs={'category_id': category.id})
+    response = client.get(url)
+
+    assert response.status_code == 200
+    opportunities = response.json()
+
+    assert isinstance(opportunities, list)
+    assert len(opportunities) > 0
+
+    opportunity = opportunities[0]
+    assert opportunity["category"] == "entertainment"
+    assert opportunity["potential_savings"] > 0
+    assert "correlations" in opportunity
+    assert "association_rules" in opportunity
+
+    correlations = opportunity["correlations"]
+    assert isinstance(correlations, list)
+    assert all(isinstance(c, tuple) and len(c) == 2 for c in correlations)
+
+    association_rules = opportunity["association_rules"]
+    assert isinstance(association_rules, list)
+    assert all(isinstance(rule, dict) for rule in association_rules)
+
+    print(association_rules)
+    # New tests for frequent itemsets and infrequent itemsets
+    assert any(rule['antecedents'] == ['movie'] and rule['consequents'] == ['burger'] for rule in association_rules)
+    assert not any(rule['antecedents'] == ['tomato'] and rule['consequents'] == ['flight'] for rule in association_rules)
+
+def test_financial_health_dashboard(client, user):
+    # Create test user and transactions
+    client.force_login(user)
+    # Create an instance of APIClient
+    client = APIClient()
+    # Force login using create_user
+    client.force_authenticate(user=user)
+
+    categories = [
+        ('Income', Category.INCOME),
+        ('Expense', Category.EXPENSE),
+        ('Saving', Category.SAVING),
+        ('Investment', Category.INVESTMENT)
+    ]
+
+    category_objects = []
+
+    # Create Category objects
+    for category_name, category_type in categories:
+        category = Category.objects.create(
+            user=user,
+            name=category_name,
+            type=category_type
+        )
+        category_objects.append(category)
+
+    transactions = [
+        ('Income Transaction 1', category_objects[0], 5000.0),
+        ('Income Transaction 2', category_objects[0], 3000.0),
+        ('Expense Transaction 1', category_objects[1], 1000.0),
+        ('Expense Transaction 2', category_objects[1], 2000.0),
+        ('Saving Transaction 1', category_objects[2], 500.0),
+        ('Saving Transaction 2', category_objects[2], 500.0),
+        ('Investment Transaction 1', category_objects[3], 1500.0),
+        ('Investment Transaction 2', category_objects[3], 500.0)
+    ]
+
+    transaction_objects = []
+
+    # Create Transaction objects
+    for title, category, amount in transactions:
+        transaction = Transaction.objects.create(
+            user=user,
+            title=title,
+            amount=amount,
+            category=category,
+            date=timezone.now()
+        )
+        transaction_objects.append(transaction)
+
+    # Form financial health object
+    financial_health = create_financial_health(user.pk)
+
+        
+    # Request
+    response = client.get(reverse('api_v1:financial-health'))
+
+    # Assertions
+    assert response.status_code == 200
+    data = response.json()
+
+    expected_keys = ['user', 'income', 'expenditure', 'savings', 'investments', 'score', 'advice']
+    for key in expected_keys:
+        assert key in data
+
+    assert data['user'] == 1
+    assert float(data['income']) == 8000.0
+    assert float(data['expenditure']) == 3000.0
+    assert float(data['savings']) == 1000.0
+    assert float(data['investments']) == 2000.0
+    assert data['score'] is not None
+    assert isinstance(data['advice'], list)

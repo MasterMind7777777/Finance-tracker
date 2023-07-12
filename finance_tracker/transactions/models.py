@@ -8,9 +8,14 @@ User = get_user_model()
 class Category(models.Model):
     EXPENSE = 'expense'
     INCOME = 'income'
+    SAVING = 'saving'
+    INVESTMENT = 'investment'
+    
     CATEGORY_TYPES = [
         (EXPENSE, 'Expense'),
         (INCOME, 'Income'),
+        (SAVING, 'Saving'),
+        (INVESTMENT, 'Investment'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -25,6 +30,22 @@ class Category(models.Model):
         return self.name
 
 
+class RecurringTransaction(models.Model):
+    FREQUENCY_CHOICES = [
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Recurring Transaction {self.id}"
+
 
 class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -34,6 +55,7 @@ class Transaction(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     date = models.DateTimeField(default=timezone.now)
     parent_transaction = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='sub_transactions')
+    recurring_transaction = models.ForeignKey(RecurringTransaction, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.description
+        return f"Transaction {self.id}"
