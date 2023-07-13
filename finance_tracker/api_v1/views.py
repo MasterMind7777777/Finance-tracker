@@ -1,21 +1,25 @@
+from decimal import Decimal
+import io
+import json
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status, generics, exceptions
+from rest_framework import viewsets, status, exceptions, parsers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Sum
-from budgets.models import CategoryBudget
+from budgets.models import CategoryBudget, CustomBudgetAlert
+from transactions.models import TransactionSplit
 from transactions.models import Category, Transaction, RecurringTransaction
 from .serializers import (
-    UserSerializer, UserProfileSerializer,
+    TransactionSplitSerializer, UserSerializer, UserProfileSerializer,
     SocialMediaAccountSerializer, FriendRequestSerializer,
     CategoryBudgetSerializer, CategorySerializer, 
     TransactionSerializer, SavingGoalSerializer)
 from django.db.models import Count
 from rest_framework.decorators import action
 from pandas import DataFrame
-from scipy.stats import pearsonr
 from mlxtend.frequent_patterns import apriori, association_rules
 from rest_framework import permissions
 from rest_framework.views import APIView
@@ -29,6 +33,7 @@ from .filters import TransactionFilter
 from capital.models import SavingGoal
 from django.core.exceptions import ValidationError
 from transactions.utils import categorize_transaction, compare_spending
+import csv
 
 User = get_user_model()
 
@@ -54,15 +59,40 @@ class CategoryBudgetViewSet(viewsets.ViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=['post'])
+    def create_custom_alert(self, request, pk):
+        try:
+            budget = CategoryBudget.objects.get(pk=pk, user=request.user)
+        except CategoryBudget.DoesNotExist:
+            return Response({'error': 'Budget not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        alert = CustomBudgetAlert(
+            message=request.data['message'],
+            budget=budget,
+            threshold=request.data['threshold']
+        )
+        alert.save()
+        return Response({'message': 'Custom alert created.'}, status=status.HTTP_201_CREATED)
+
     def alerts(self, request):
-        budgets = CategoryBudget.objects.filter(user__in=[request.user])
+        budgets = CategoryBudget.objects.filter(user=request.user)
         over_limit_categories = []
+        custom_alerts = []
         for budget in budgets:
             total_spent = Transaction.objects.filter(user=request.user, category=budget.category).aggregate(Sum('amount'))['amount__sum'] or 0
             if total_spent > budget.budget_limit:
                 over_limit_categories.append(budget.category.name)
                 PushNotification.objects.create(user=request.user, content='You have exceeded your budget limit for ' + budget.category.name)
-        return Response({'over_limit_categories': over_limit_categories})
+
+            custom_alert = CustomBudgetAlert.objects.filter(budget=budget).first()
+            if custom_alert and total_spent > custom_alert.threshold:
+                custom_alerts.append(custom_alert.message)
+                PushNotification.objects.create(user=request.user, content=custom_alert.message)
+
+        return Response({
+            'over_limit_categories': over_limit_categories,
+            'custom_alerts': custom_alerts
+        })
 
 
 class CategoryViewSet(viewsets.ModelViewSet, CreateModelMixin):
@@ -123,7 +153,77 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    @action(detail=True, methods=['post'])
+    def split_transaction(self, request, pk=None):
+        transaction = self.get_object()
+        splits = request.data.get('splits')
 
+        if not splits:
+            return Response({"message": "No splits provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        for split in splits:
+            user_id = split.get('user')
+            amount = Decimal(split.get('amount'))
+
+            if not user_id or not amount:
+                return Response({"message": "Each split must contain a 'user' and an 'amount'."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user = User.objects.get(id=user_id)
+            split_record = TransactionSplit.objects.create(requester=transaction.user, requestee=user, transaction=transaction, amount=amount)
+
+        serialized_data = TransactionSplitSerializer(transaction.transactionsplit_set, many=True).data
+        return Response(serialized_data, status=status.HTTP_201_CREATED)
+
+
+    @action(detail=False, methods=['POST'])
+    def bulk_upload(self, request):
+        file = request.FILES.get('file')
+        if file:
+            try:
+                # Read and print the file content for debugging
+                file_wrapper = io.TextIOWrapper(file, encoding='utf-8')  # Convert to text mode))
+                reader = csv.DictReader(file_wrapper)
+                transactions = []
+                category_ids = set()
+
+                for row in reader:
+                    category_id = row['category_id']
+                    category_ids.add(category_id)
+
+                    transaction = Transaction(
+                        user=request.user,
+                        title=row['title'],
+                        description=row['description'],
+                        amount=row['amount'],
+                        date=row['date']
+                    )
+                    transactions.append(transaction)
+
+                categories_exist = Category.objects.filter(id__in=category_ids).values_list('id', flat=True)
+
+                # Convert category_ids to a set of integers
+                category_ids = set(map(int, category_ids))
+
+                # Perform the comparison
+                if set(categories_exist) != category_ids:
+                    return JsonResponse({'message': 'Invalid category IDs.'}, status=400)
+
+                Transaction.objects.bulk_create(transactions)
+
+                # Fetch the updated transactions from the database
+                updated_transactions = Transaction.objects.filter(user=request.user)
+
+                if updated_transactions.exists():
+                    return JsonResponse({'message': 'Transactions uploaded successfully.'}, status=200)
+                else:
+                    return JsonResponse({'message': 'Failed to create transactions.'}, status=500)
+
+            except Exception as e:
+                # Handle the exception here
+                return JsonResponse({'message': f'Error occurred: {str(e)}'}, status=500)
+
+        return JsonResponse({'message': 'No file uploaded.'}, status=400)
     
     @action(detail=False, methods=['GET'])
     def recommendations(self, request):
@@ -221,6 +321,42 @@ class TransactionViewSet(viewsets.ModelViewSet):
         return Response({'message': 'Transaction category assigned successfully'})
 
 
+class TransactionSplitViewSet(viewsets.ViewSet):
+    queryset = TransactionSplit.objects.all()
+    allowed_methods = ['put']
+
+    @action(detail=True, methods=['put'])
+    def accept(self, request, pk=None):
+        transaction_split = get_object_or_404(TransactionSplit, pk=pk, requestee=request.user)
+
+        with transaction.atomic():
+            original_transaction = transaction_split.transaction
+
+            # Create a new transaction with the amount from the TransactionSplit
+            new_transaction = Transaction.objects.create(
+                user=request.user,
+                title=f"Split Transaction from {original_transaction.title}",
+                amount=transaction_split.amount,
+                date=original_transaction.date,
+                currency=original_transaction.currency
+            )
+
+            # Update the status of the TransactionSplit to 'accepted'
+            transaction_split.status = 'accepted'
+            transaction_split.save()
+
+            # Reduce the amount of the original transaction
+            original_transaction.amount -= transaction_split.amount
+            original_transaction.save()
+
+        return Response({'status': 'Transaction split accepted'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['put'])
+    def decline(self, request, pk=None):
+        transaction_split = get_object_or_404(TransactionSplit, pk=pk, requestee=request.user)
+        transaction_split.status = 'declined'
+        transaction_split.save()
+        return Response({'status': 'Transaction split declined'}, status=status.HTTP_200_OK)
 
 
 class FinancialHealthView(APIView):
@@ -348,6 +484,17 @@ class UserViewSet(viewsets.ModelViewSet):
         profile = user.userprofile
         serializer = UserProfileSerializer(profile)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'], parser_classes=[parsers.MultiPartParser, parsers.FormParser])
+    def upload_profile_pic(self, request, *args, **kwargs):
+        if 'file' not in request.data:
+            return Response({"file": "No image file included in request"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        user.userprofile.profile_picture = request.data['file']
+        user.userprofile.save()
+        
+        return Response({"message": "Profile picture uploaded successfully"}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get', 'post'])  # Allow GET and POST requests
     def social_media_accounts(self, request, pk=None):

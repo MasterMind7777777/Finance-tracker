@@ -12,3 +12,12 @@ class CategoryBudget(models.Model):
     def __str__(self):
         user_names = ', '.join([user.username for user in self.user.all()])
         return f'{user_names} - {self.category.name}'
+    
+
+class CustomBudgetAlert(models.Model):
+    message = models.CharField(max_length=200)
+    budget = models.ForeignKey('CategoryBudget', on_delete=models.CASCADE, related_name='custom_alerts')
+    threshold = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return self.message

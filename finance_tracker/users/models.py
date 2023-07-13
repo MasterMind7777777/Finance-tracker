@@ -3,6 +3,8 @@ from django.db import models
 from django.forms import ValidationError
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
+
 
 class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
@@ -22,6 +24,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='userprofile')
     bio = models.TextField(blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures', blank=True)
+    currency = models.CharField(choices=settings.CURRENCIES.items(), default='USD', max_length=3)
 
     def __str__(self):
         return self.user.username

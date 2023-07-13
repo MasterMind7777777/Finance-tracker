@@ -125,3 +125,12 @@ PLAID_ENV = 'sandbox'  # Change to 'development' or 'production' for live enviro
 
 # Visual
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+
+# Constants
+CURRENCIES = {
+    'USD': 'US Dollar',
+    'EUR': 'Euro',
+    'GBP': 'British Pound',
+    # Add more currency choices as needed
+}

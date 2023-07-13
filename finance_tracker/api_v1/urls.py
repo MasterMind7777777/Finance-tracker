@@ -3,7 +3,8 @@ from rest_framework.routers import SimpleRouter
 
 from .views import (CategoryBudgetViewSet, CategoryViewSet, 
                     TransactionViewSet, FinancialHealthView, 
-                    SavingGoalViewSet, UserViewSet)
+                    SavingGoalViewSet, UserViewSet,
+                    TransactionSplitViewSet)
 
 app_name = 'api_v1'
 
@@ -20,6 +21,8 @@ urlpatterns = [
     path('transactions/recommendations/', TransactionViewSet.as_view({'get': 'recommendations'}), name='transaction-recommendations'),
     path('transactions/savings_opportunities/<int:category_id>', TransactionViewSet.as_view({'get': 'savings_opportunities'}), name='transaction-savings_opportunities'),
     path('transactions/<int:transaction_id>/assign_category', TransactionViewSet.as_view({'post': 'assign_category'}), name='transaction-assign_category'),
+    path('transaction_splits/<int:pk>/accept/', TransactionSplitViewSet.as_view({'put': 'accept'}), name='transaction_split-accept'),
+    path('transaction_splits/<int:pk>/decline/', TransactionSplitViewSet.as_view({'put': 'decline'}), name='transaction_split-decline'),
     path('financial-health/', FinancialHealthView.as_view(), name='financial-health'),
     # other paths...
 ]

@@ -14,6 +14,7 @@ budget_overview: Shows a user's budget overview.
 delete_budget: Erases a specific budget category.
 CategoryBudgetViewSet: CRUD operations +
   alerts: Generates a list of categories where the user's spending has exceeded their established budget limits. Also create PushNotification
+  create_custom_alert: Allows users to set custom alerts for soft budget thresholds.
 
 Transactions:
 add_transaction: Creates a new transaction.
@@ -30,13 +31,17 @@ TransactionViewSet: CRUD operations +
   recommendations: Suggests transactions to the user based on their most frequently used category.
   assign_category: Uses keywords in a transaction's description and name to categorize the transaction automatically.
   apply_recurring_transactions: create transactions planed by RecurringTransaction.
+  bulk_upload: Allow users to upload many transactions at once from csv
+  split_transaction: Splits a transaction among multiple users and returns the split details.
+TransactionSplitViewSet: Allows users to accept or decline transaction splits
 
 Users:
 signup: Manages user registration.
 user_login: Handles user sign-in.
 user_logout: Manages user sign-out.
 dashboard: Displays user dashboard.
-UserViewSet: CRUD operations for users and user profiles, social media accounts, and friend requests.
+UserViewSet: CRUD operations for users and user profiles, social media accounts, and friend requests. +
+  upload_profile_pic: Enables user profile picture upload via a multipart/form-data POST request
 
 Capital:
 SavingGoalViewSet: manages user-specific saving goals, supports adding/removing users and categories, ensuring creator's modification rights.
@@ -45,5 +50,5 @@ Database Models:
 Analytics App: Manages analytics with StickyNoteContent, StickyNote, Board, and BoardStickyNote models.
 Capital App: Enables collaborative saving goals tracking using the versatile SavingGoal model.
 Budgets App: Uses CategoryBudget model for budget management. Multiple users can share budget.
-Transactions App: Handles transactions with Category and Transaction models, RecurringTransaction.
+Transactions App: Handles transactions with difrent currencies with Category, Transaction, RecurringTransaction models.
 Users App: Manages user profiles and social media integration with User, UserProfile, SocialMediaAccount, PushNotification, FriendRequest.

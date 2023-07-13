@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -56,6 +57,23 @@ class Transaction(models.Model):
     date = models.DateTimeField(default=timezone.now)
     parent_transaction = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='sub_transactions')
     recurring_transaction = models.ForeignKey(RecurringTransaction, on_delete=models.CASCADE, null=True, blank=True)
+    currency = models.CharField(choices=settings.CURRENCIES.items(), default='USD', max_length=3)
 
     def __str__(self):
         return f"Transaction {self.id}"
+
+
+class TransactionSplit(models.Model):
+    REQUEST_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined')
+    ]
+    requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transaction_splits_made')
+    requestee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transaction_splits_received')
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(choices=REQUEST_STATUS_CHOICES, default='pending', max_length=10)
+
+    class Meta:
+        unique_together = ['requester', 'requestee', 'transaction']

@@ -4,12 +4,16 @@ from django.test import Client
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
+from users.models import UserProfile
 from users.models import FriendRequest
 from transactions.utils import compare_spending
 from django.db import transaction
 from transactions.models import Transaction, Category
 from decimal import Decimal
 from django.core.exceptions import ValidationError
+from PIL import Image
+import tempfile
+import os
 
 User = get_user_model()
 
@@ -265,3 +269,24 @@ def test_compare_spending(db, user, user1, user2, category, friend_category,
     assert response_data['friends_num_transactions'] == {str(user1.id): 10, str(user2.id): 10}
     assert 'friends_avg_transactions' in response_data
     assert result['friends_avg_transactions'] == {user1.id: Decimal('20.00'), user2.id: Decimal('30.00')}
+
+def test_profile_picture_upload(client, user):
+    client.force_login(user)
+
+    # Create a temporary image file
+    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as test_image:
+        image = Image.new('RGB', (100, 100))
+        image.save(test_image, 'JPEG')
+
+    with open(test_image.name, 'rb') as valid_image_file:
+        # Use reverse to generate the URL
+        url = reverse('api_v1:user-upload-profile-pic')
+
+        response = client.post(url, {'file': valid_image_file}, format='multipart')
+
+    os.remove(test_image.name)  # clean up the temporary image file
+
+    assert response.status_code == 200
+    assert UserProfile.objects.filter(user=user).exists()
+    user.refresh_from_db()
+    assert user.userprofile.profile_picture.url is not None

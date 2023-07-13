@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from budgets.models import CategoryBudget
 from analytics.models import FinancialHealth
+from transactions.models import TransactionSplit
 from transactions.models import Category, Transaction
 from capital.models import SavingGoal
 from users.models import User, UserProfile, SocialMediaAccount, FriendRequest
@@ -108,4 +109,14 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'phone_number', 'date_of_birth', 'userprofile', 'socialmediaaccount_set',
                   'sent_friend_requests', 'received_friend_requests')
 
+class TransactionSplitSerializer(serializers.ModelSerializer):
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
 
+    class Meta:
+        model = TransactionSplit
+        fields = ['id', 'requester', 'requestee', 'transaction', 'amount', 'status']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['amount'] = float(representation['amount'])
+        return representation

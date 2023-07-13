@@ -1,11 +1,15 @@
+import csv
 import datetime
+from decimal import Decimal
 import pytest
 import json
 from django.utils.timezone import make_aware
 from django.core import serializers
 from django.urls import reverse
 from django.test import Client
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
+from transactions.models import TransactionSplit
 from transactions.utils import categorize_transaction, apply_recurring_transactions
 from transactions.models import Transaction, Category
 from rest_framework.test import APIClient
@@ -15,6 +19,7 @@ from datetime import timedelta, datetime
 from django.utils import timezone
 import random
 from transactions.utils import forecast_expenses
+import os
 
 User = get_user_model()
 
@@ -25,16 +30,39 @@ def client():
 @pytest.fixture
 def user(db):
     user = User.objects.create_user(username='testuser', password='12345')
-    category = Category.objects.create(name='Test Category', user=user)
+    return user
+
+@pytest.fixture
+def user1(db):
+    user = User.objects.create_user(username='testuser1', password='12345')
     return user
 
 @pytest.fixture
 def user2(db):
     user = User.objects.create_user(username='testuser2', password='123456')
-    category = Category.objects.create(name='Test Category2', user=user2)
-    return user2
+    return user
 
-def test_add_transaction_view(client, user):
+@pytest.fixture
+def user3(db):
+    user = User.objects.create_user(username='testuser3', password='123456')
+    return user
+
+@pytest.fixture
+def category1(db, user):
+    category = Category.objects.create(name='Test Category3', user=user, type=Category.EXPENSE)
+    return category
+
+@pytest.fixture
+def category2(db, user):
+    category = Category.objects.create(name='Test Category4', user=user, type=Category.EXPENSE)
+    return category
+
+@pytest.fixture
+def category3(db, user2):
+    category = Category.objects.create(name='Test Category5', user=user2, type=Category.EXPENSE)
+    return category
+
+def test_add_transaction_view(client, user, category1):
     client.login(username='testuser', password='12345')
     category = Category.objects.first()
     transaction_date = make_aware(datetime(2023, 7, 1))  # Add the appropriate timezone information
@@ -49,7 +77,7 @@ def test_add_transaction_view(client, user):
     assert response.url == reverse('users:dashboard')
     assert Transaction.objects.filter(title='Test Transaction').exists()
 
-def test_delete_transaction_view(client, user):
+def test_delete_transaction_view(client, user, category1):
     client.login(username='testuser', password='12345')
     transaction_date = make_aware(datetime(2023, 7, 1))  # Add the appropriate timezone information
     transaction = Transaction.objects.create(
@@ -65,20 +93,20 @@ def test_delete_transaction_view(client, user):
     assert response.url == reverse('users:dashboard')
     assert not Transaction.objects.filter(id=transaction.id).exists()
 
-def test_categories_view(client, user):
+def test_categories_view(client, user, category1):
     client.login(username='testuser', password='12345')
     category = Category.objects.first()
     response = client.get(reverse('transactions:categories'))
     assert response.status_code == 200
     response_data = response.json()
     categories = serializers.deserialize('json', response_data['categories'])
-    assert any(obj.object.name == 'Test Category' for obj in categories)
+    assert any(obj.object.name == 'Test Category3' for obj in categories)
 
-def test_manage_categories_view(client, user):
+def test_manage_categories_view(client, user, category1):
     client.login(username='testuser', password='12345')
     response = client.get(reverse('transactions:manage_categories'))
     assert response.status_code == 200
-    assert b'Test Category' in response.content
+    assert b'Test Category3' in response.content
     response = client.post(reverse('transactions:manage_categories'), {'name': 'New Category'})
     assert response.status_code == 200
     # assert response.url == reverse('transactions:manage_categories')
@@ -139,7 +167,7 @@ def test_delete_transaction_view_with_other_user(client, user):
     assert response.status_code == 403  # Check that the user gets a forbidden response
 
 @pytest.mark.django_db
-def test_transaction_detail_view(client, user):
+def test_transaction_detail_view(client, user, category1):
     client.login(username='testuser', password='12345')
     transaction = Transaction.objects.create(
         title='Test Transaction',
@@ -154,14 +182,14 @@ def test_transaction_detail_view(client, user):
     assert b'Test Transaction' in response.content
 
 @pytest.mark.django_db
-def test_transaction_list_view_with_filters_and_sorting(client, user):
+def test_transaction_list_view_with_filters_and_sorting(client, user, category1):
     client.login(username='testuser', password='12345')
     category = Category.objects.create(name='Test Category 2', user=user)
     transaction1 = Transaction.objects.create(
         title='Test Transaction 1',
         description='This is a test transaction.',
         amount=100.0,
-        category=Category.objects.first(),
+        category=category1,
         date=make_aware(datetime(2023, 7, 1)),
         user=user
     )
@@ -212,7 +240,7 @@ def test_transaction_list_view_with_filters_and_sorting(client, user):
 
 
 @pytest.mark.django_db
-def test_transaction_detail_view_with_subtransaction_creation(client, user):
+def test_transaction_detail_view_with_subtransaction_creation(client, user, category1):
     client.login(username='testuser', password='12345')
     transaction = Transaction.objects.create(
         title='Test Transaction',
@@ -461,3 +489,84 @@ def test_recurring_transactions(user):
 
         response = client.post(url, recurring_transaction_data, format='json')
         assert response.status_code == status.HTTP_201_CREATED
+
+def test_transactions_bulk_upload(client, user, category1, category2, category3):
+    client.force_login(user)
+
+    # Get the current directory
+    current_directory = os.getcwd()
+
+    # Specify the relative path from the current directory
+    relative_path = 'transactions/tests/test_transactions.csv'
+
+    # Join the current directory path with the relative path
+    file_path = os.path.join(current_directory, relative_path)
+
+    url = reverse('api_v1:transaction-bulk-upload')  # Replace `api_v1` with the actual API URL namespace
+    with open(file_path, 'rb') as file:
+        # Create a SimpleUploadedFile object from the file
+        uploaded_file = SimpleUploadedFile('test_file_name', file.read(), content_type='text/csv')
+        response = client.post(url, {'file': uploaded_file})
+    
+    print(response.json())
+    
+    assert response.status_code == 200
+    assert Transaction.objects.filter(user=user).count() > 0
+
+def test_multiple_currencies(client, user, category1):
+    client.force_login(user)
+    url = reverse('api_v1:transaction-list')  # Assuming 'transaction-list' is the URL name for the TransactionViewSet
+    data = {'title': 'test title', 'amount': 100, 'category': 1, 'currency': 'EUR'}
+    response = client.post(url, data)
+    assert response.status_code == 201
+    assert Transaction.objects.filter(user=user, amount=100, category=1, currency='EUR').exists()
+
+def test_transaction_splitting(client, user, user1, user2, user3, category1):
+    client.force_login(user)
+    transaction = Transaction.objects.create(user=user, title="Restaurant diner", amount=250, category=category1)
+    url = reverse('api_v1:transaction-split-transaction', kwargs={'pk': transaction.id})
+    data = {'splits': [{'user': user2.id, 'amount': 50}, {'user': user1.id, 'amount': 60}]}
+    json_data = json.dumps(data)
+    response = client.post(url, json_data, content_type='application/json')
+    assert response.status_code == 201
+    assert TransactionSplit.objects.filter(requester=user, requestee=user2, transaction=transaction, amount=50).exists()
+    response = response.json()
+    requestees = [3,2]
+    amounts = [50,60]
+    for inx, split in enumerate(response):
+        assert split['requester'] == 1
+        assert split['transaction'] == 1
+        assert split['status'] == 'pending'
+        assert split['requestee'] == requestees[inx]
+        assert split['amount'] == amounts[inx]
+    
+    # Accept the transaction splits
+    client.force_login(user2)
+    split_url = reverse('api_v1:transaction_split-accept', kwargs={'pk': response[0]['id']})
+    accept_response = client.put(split_url)
+    assert accept_response.status_code == 200
+    assert accept_response.json()['status'] == 'Transaction split accepted'
+        
+    # Verify if the original transaction amount is reduced
+    transaction.refresh_from_db()
+    assert transaction.amount == 200
+
+    client.force_login(user)
+    transaction = Transaction.objects.create(user=user, title="Restaurant diner 2", amount=350, category=category1)
+    url = reverse('api_v1:transaction-split-transaction', kwargs={'pk': transaction.id})
+    data = {'splits': [{'user': user2.id, 'amount': 60}, {'user': user1.id, 'amount': 70}]}
+    json_data = json.dumps(data)
+    response = client.post(url, json_data, content_type='application/json')
+    assert response.status_code == 201
+    response = response.json()
+    assert TransactionSplit.objects.filter(requester=user, requestee=user2, transaction=transaction, amount=60).exists()
+    
+    client.force_login(user2)
+    print(response[0]['id'])
+    split_url = reverse('api_v1:transaction_split-decline', kwargs={'pk': response[0]['id']})
+    decline_response = client.put(split_url)
+    assert decline_response.status_code == 200
+    assert decline_response.json()['status'] == 'Transaction split declined'
+
+
+

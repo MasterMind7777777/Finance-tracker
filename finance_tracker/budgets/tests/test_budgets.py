@@ -1,6 +1,6 @@
 import pytest
 from transactions.models import Category, Transaction
-from budgets.models import CategoryBudget
+from budgets.models import CategoryBudget, CustomBudgetAlert
 from django.urls import reverse
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
@@ -168,3 +168,19 @@ def test_category_budget(create_user, create_user2):
     remaining_budget = Decimal(category_budget.budget_limit) - spent_amount
 
     assert remaining_budget == Decimal(400.0)  # The remaining budget after all three transactions
+
+def test_custom_budget_alerts(client, create_user, create_category):
+    client.force_login(create_user)
+    category_budget = CategoryBudget.objects.create(category=create_category, budget_limit=100.0)
+    category_budget.user.add(create_user)
+    response = client.post(reverse('api_v1:budget-create-custom-alert', kwargs={'pk': category_budget.id}), {'threshold': 75, 'message': 'Custom alert message'})
+    print(response.json())
+    assert response.status_code == 201
+    assert CustomBudgetAlert.objects.filter(budget__user=create_user, budget__id=1).exists()
+    assert CustomBudgetAlert.objects.get(budget__user=create_user, budget__id=1).threshold == 75
+    # Assuming there is a transaction that causes the threshold to be exceeded
+    Transaction.objects.create(title='Test Transaction 1', user=create_user, amount=76.0, category=create_category),
+    response = client.get(reverse('api_v1:budget-alerts'))
+    assert response.status_code == 200
+    assert 'Custom alert message' in response.data['custom_alerts']
+    assert not response.data['over_limit_categories']
