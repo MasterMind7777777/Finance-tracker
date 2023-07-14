@@ -1,3 +1,4 @@
+import time
 import pytest
 from transactions.models import Category, Transaction
 from budgets.models import CategoryBudget, CustomBudgetAlert
@@ -6,10 +7,17 @@ from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
 from users.models import PushNotification
 from decimal import Decimal
-
+from django.test import override_settings
+from unittest.mock import patch
+from django.core.cache import cache
+from celery import current_app
 
 User = get_user_model()
 
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    cache.clear()
 
 @pytest.fixture
 def test_password():
@@ -66,66 +74,75 @@ def test_delete_budget(client, create_user, create_category, create_budget):
     assert response.status_code == 302
     assert CategoryBudget.objects.filter(id=create_budget.id).count() == 0
 
-def test_budget_alerts(client, create_user):
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+def test_custom_budget_alerts(client, create_user, create_category):
     client.force_login(create_user)
-    # Create an instance of APIClient
     client = APIClient()
-
-    # Force login using create_user
     client.force_authenticate(user=create_user)
 
-    # Create a category
-    category_data = {'name': 'Groceries', 'type': 'expense'}
-    category_response = client.post(reverse('api_v1:category-list'), category_data, format='json')
-    assert category_response.status_code == 201
+    current_app.conf.task_store_eager_result = True
 
-    # Send a POST request to create a budget
-    budget_data = {'category': category_response.data['id'], 'budget_limit': 100}
-    budget_response = client.post(reverse('api_v1:budget-list'), budget_data, format='json')
-    assert budget_response.status_code == 201
+    category_budget = CategoryBudget.objects.create(category=create_category, budget_limit=100.0)
+    category_budget.user.add(create_user)
 
-    # Send a POST request to add a transaction
-    transaction_data = {'title': 'test transaction','category': category_response.data['id'], 'amount': 101}
-    transaction_response = client.post(reverse('api_v1:transaction-list'), transaction_data, format='json')
-    assert transaction_response.status_code == 201
+    alert_data = {'threshold': 75, 'message': 'Custom alert message'}
+    alert_response = client.post(reverse('api_v1:budget-create-custom-alert', kwargs={'pk': category_budget.id}), alert_data, format='json')
+    assert alert_response.status_code == 201
+    assert CustomBudgetAlert.objects.filter(budget__user=create_user, budget__id=1).exists()
+    assert CustomBudgetAlert.objects.get(budget__user=create_user, budget__id=1).threshold == 75
 
-    alerts = client.get(reverse('api_v1:budget-alerts'))
-    print(alerts)
-    assert alerts.status_code == 200
-    assert 'Groceries' in alerts.json()['over_limit_categories']
+    # Assuming there is a transaction that causes the threshold to be exceeded
+    Transaction.objects.create(title='Test Transaction 1', user=create_user, amount=76.0, category=create_category)
 
+    alert_task_response = client.get(reverse('api_v1:budget-alerts'))
+    assert alert_task_response.status_code == 202
+    alert_task_response = alert_task_response.json()
+    assert alert_task_response['status'] == 'Pending'
+
+    alert_task_response = client.get(reverse('api_v1:budget-alerts'))
+    assert alert_task_response.status_code == 200
+    alert_task_response = alert_task_response.json()
+    assert alert_task_response['status'] == 'Complete'
+
+    result = alert_task_response['result']
+
+    assert 'Custom alert message' in result['custom_alerts']
+    assert not result['over_limit_categories']
+
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 def test_push_notifications_for_budget_alerts(client, create_user):
     client.force_login(create_user)
-    # Create an instance of APIClient
     client = APIClient()
-
-    # Force login using create_user
     client.force_authenticate(user=create_user)
 
-    # Create a category
+    current_app.conf.task_store_eager_result = True
+
     category_data = {'name': 'Food', 'type': 'expense'}
     category_response = client.post(reverse('api_v1:category-list'), category_data, format='json')
     assert category_response.status_code == 201
 
-    # Send a POST request to create a budget
     budget_data = {'category': category_response.data['id'], 'budget_limit': 100}
     budget_response = client.post(reverse('api_v1:budget-list'), budget_data, format='json')
     assert budget_response.status_code == 201
 
-    # Send a POST request to add a transaction
     transaction_data = {'title': 'test transaction','category': category_response.data['id'], 'amount': 101}
     transaction_response = client.post(reverse('api_v1:transaction-list'), transaction_data, format='json')
     assert transaction_response.status_code == 201
-    
-    # Run the alerts view which generates the budget alerts
-    response = client.get(reverse('api_v1:budget-alerts'))
-    
-    # Check if the alert is generated
-    assert response.status_code == 200
-    print(response.json())
-    assert 'Food' in response.json()['over_limit_categories']
-    
-    # Now let's check if a push notification is generated for the alert
+
+    alert_task_response = client.get(reverse('api_v1:budget-alerts'))
+    assert alert_task_response.status_code == 202
+    alert_task_response = alert_task_response.json()
+    assert alert_task_response['status'] == 'Pending'
+
+    alert_task_response = client.get(reverse('api_v1:budget-alerts'))
+    assert alert_task_response.status_code == 200
+    alert_task_response = alert_task_response.json()
+    assert alert_task_response['status'] == 'Complete'
+
+    result = alert_task_response['result']
+
+    assert 'Food' in result['over_limit_categories']
+
     push_notifications = PushNotification.objects.filter(user=create_user)
     assert len(push_notifications) == 1
     assert push_notifications[0].content == 'You have exceeded your budget limit for Food'
@@ -168,19 +185,3 @@ def test_category_budget(create_user, create_user2):
     remaining_budget = Decimal(category_budget.budget_limit) - spent_amount
 
     assert remaining_budget == Decimal(400.0)  # The remaining budget after all three transactions
-
-def test_custom_budget_alerts(client, create_user, create_category):
-    client.force_login(create_user)
-    category_budget = CategoryBudget.objects.create(category=create_category, budget_limit=100.0)
-    category_budget.user.add(create_user)
-    response = client.post(reverse('api_v1:budget-create-custom-alert', kwargs={'pk': category_budget.id}), {'threshold': 75, 'message': 'Custom alert message'})
-    print(response.json())
-    assert response.status_code == 201
-    assert CustomBudgetAlert.objects.filter(budget__user=create_user, budget__id=1).exists()
-    assert CustomBudgetAlert.objects.get(budget__user=create_user, budget__id=1).threshold == 75
-    # Assuming there is a transaction that causes the threshold to be exceeded
-    Transaction.objects.create(title='Test Transaction 1', user=create_user, amount=76.0, category=create_category),
-    response = client.get(reverse('api_v1:budget-alerts'))
-    assert response.status_code == 200
-    assert 'Custom alert message' in response.data['custom_alerts']
-    assert not response.data['over_limit_categories']

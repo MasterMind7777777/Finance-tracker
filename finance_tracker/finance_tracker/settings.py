@@ -126,6 +126,34 @@ PLAID_ENV = 'sandbox'  # Change to 'development' or 'production' for live enviro
 # Visual
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
+# Celary
+if DEBUG:
+    TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
+    CELERY_TASK_ALWAYS_EAGER=True
+    CELERY_BROKER_URL = 'memory://localhost/'
+    CELERY_RESULT_BACKEND = 'cache+memory://localhost/'
+
+else:
+    CELERY_BROKER_URL = 'redis://localhost:6379'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+    CELERY_CACHE_BACKEND = 'django.core.cache.backends.redis.RedisCache'
+    CELERY_CACHE_LOCATION = 'redis://localhost:6379/1'
+
+# Cache
+if DEBUG:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': 'redis://127.0.0.1:6379/1',
+        }
+    }
+
 
 # Constants
 CURRENCIES = {

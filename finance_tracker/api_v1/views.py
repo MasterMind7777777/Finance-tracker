@@ -1,6 +1,5 @@
 from decimal import Decimal
 import io
-import json
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -10,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Sum
 from budgets.models import CategoryBudget, CustomBudgetAlert
+from analytics.utils import check_financial_health
 from transactions.models import TransactionSplit
 from transactions.models import Category, Transaction, RecurringTransaction
 from .serializers import (
@@ -34,6 +34,11 @@ from capital.models import SavingGoal
 from django.core.exceptions import ValidationError
 from transactions.utils import categorize_transaction, compare_spending
 import csv
+from django.core.cache import cache
+from budgets.tasks import generate_budget_alerts, check_budget_alerts
+from celery import current_task
+from celery.result import AsyncResult
+from finance_tracker.celery import app
 
 User = get_user_model()
 
@@ -75,24 +80,41 @@ class CategoryBudgetViewSet(viewsets.ViewSet):
         return Response({'message': 'Custom alert created.'}, status=status.HTTP_201_CREATED)
 
     def alerts(self, request):
-        budgets = CategoryBudget.objects.filter(user=request.user)
-        over_limit_categories = []
-        custom_alerts = []
-        for budget in budgets:
-            total_spent = Transaction.objects.filter(user=request.user, category=budget.category).aggregate(Sum('amount'))['amount__sum'] or 0
-            if total_spent > budget.budget_limit:
-                over_limit_categories.append(budget.category.name)
-                PushNotification.objects.create(user=request.user, content='You have exceeded your budget limit for ' + budget.category.name)
+        cache_key = f"alerts_task_{request.user.id}"
+        task_status = cache.get(cache_key)
 
-            custom_alert = CustomBudgetAlert.objects.filter(budget=budget).first()
-            if custom_alert and total_spent > custom_alert.threshold:
-                custom_alerts.append(custom_alert.message)
-                PushNotification.objects.create(user=request.user, content=custom_alert.message)
-
-        return Response({
-            'over_limit_categories': over_limit_categories,
-            'custom_alerts': custom_alerts
-        })
+        if task_status is None:
+            task = generate_budget_alerts.delay(request.user.id)
+            cache.set(cache_key, task.id, timeout=None)
+            response_data = {
+                'status': 'Pending'
+            }
+            return JsonResponse(response_data, status=202)  # Status code 202 for Pending
+        else:
+            subtasks = cache.get(f"alerts_result_{request.user.id}")
+            budget_alerts = check_budget_alerts(request.user.id)
+            
+            if budget_alerts.get('status') == 'Error':
+                task = generate_budget_alerts.delay(request.user.id)
+                cache.set(cache_key, task.id, timeout=None)
+                response_data = {
+                'status': 'Pending'
+                }
+                return JsonResponse(response_data, status=202)  # Status code 202 for Pending
+            
+            all_sub_tasks_ready = all(AsyncResult(task_id).ready() for task_id in subtasks)
+            if all_sub_tasks_ready:
+                response_data = {
+                    'status': 'Complete',
+                    'result': budget_alerts
+                }
+                cache.delete(cache_key)  # Remove completed task from cache
+                return JsonResponse(response_data, status=200)  # Status code 200 for Complete
+            else:
+                response_data = {
+                    'status': 'Pending'
+                }
+                return JsonResponse(response_data, status=202)  # Status code 202 for Pending
 
 
 class CategoryViewSet(viewsets.ModelViewSet, CreateModelMixin):
@@ -363,9 +385,8 @@ class FinancialHealthView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        financial_health = FinancialHealth.objects.filter(user=request.user).first()
-        serializer = FinancialHealthSerializer(financial_health)
-        return Response(serializer.data)
+        financial_health = check_financial_health(request.user.id)
+        return Response(financial_health)
 
     def create(self, request, user_id):
         if not request.user.is_staff:

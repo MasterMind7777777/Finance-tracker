@@ -7,14 +7,14 @@ delete_sticky_note_from_board: Removes a sticky note from a board.
 save_board: Stores the current state of a board.
 fetch_user_boards: Retrieves boards for a specific user.
 savings_opportunities: Identifies saving opportunities and association rules for a specific expense category.
-create_financial_health: Calculates a financial health score based on various factors and provides personalized tips for improvement.
+create_financial_health: Calculates a financial health score based on various factors and provides personalized tips for improvement.[celery]
 
 Budgets:
 budget_overview: Shows a user's budget overview.
 delete_budget: Erases a specific budget category.
 CategoryBudgetViewSet: CRUD operations +
-  alerts: Generates a list of categories where the user's spending has exceeded their established budget limits. Also create PushNotification
-  create_custom_alert: Allows users to set custom alerts for soft budget thresholds.
+  alerts: Generates a list of categories where the user's spending has exceeded their established budget limits. Also create PushNotification. [celery]
+  create_custom_alert: Allows users to set custom alerts for soft budget thresholds.[celery]
 
 Transactions:
 add_transaction: Creates a new transaction.

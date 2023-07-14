@@ -4,8 +4,6 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from analytics.models import Board, StickyNote, BoardStickyNote, StickyNoteContent
-from analytics.utils import create_financial_health
-from analytics.models import FinancialHealth
 from transactions.models import Transaction, Category
 import json
 from rest_framework.test import APIClient
@@ -324,26 +322,29 @@ def test_financial_health_dashboard(client, user):
             date=timezone.now()
         )
         transaction_objects.append(transaction)
-
-    # Form financial health object
-    financial_health = create_financial_health(user.pk)
-
-        
-    # Request
+    
+    # Fresh request of financial health
     response = client.get(reverse('api_v1:financial-health'))
-
-    # Assertions
     assert response.status_code == 200
     data = response.json()
+    assert data['status'] == 'Pending'
 
+    # Retrive existing request of financial health
+    response = client.get(reverse('api_v1:financial-health'))
+    assert response.status_code == 200
+    data = response.json()
+    assert data['status'] == 'Complete'
+
+    financial_health_result = data['financial_health_result']
     expected_keys = ['user', 'income', 'expenditure', 'savings', 'investments', 'score', 'advice']
     for key in expected_keys:
-        assert key in data
+        assert key in financial_health_result
 
-    assert data['user'] == 1
-    assert float(data['income']) == 8000.0
-    assert float(data['expenditure']) == 3000.0
-    assert float(data['savings']) == 1000.0
-    assert float(data['investments']) == 2000.0
-    assert data['score'] is not None
-    assert isinstance(data['advice'], list)
+
+    assert financial_health_result['user'] == 1
+    assert float(financial_health_result['income']) == 8000.0
+    assert float(financial_health_result['expenditure']) == 3000.0
+    assert float(financial_health_result['savings']) == 1000.0
+    assert float(financial_health_result['investments']) == 2000.0
+    assert financial_health_result['score'] is not None
+    assert isinstance(financial_health_result['advice'], list)
