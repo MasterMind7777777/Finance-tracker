@@ -6,7 +6,7 @@ import json
 from django.utils.timezone import make_aware
 from django.core import serializers
 from django.urls import reverse
-from django.test import Client
+from django.test import Client, override_settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from transactions.models import TransactionSplit
@@ -20,6 +20,8 @@ from django.utils import timezone
 import random
 from transactions.utils import forecast_expenses
 import os
+from django.test import override_settings
+from celery import current_app
 
 User = get_user_model()
 
@@ -302,11 +304,15 @@ def test_transaction_recommendation_feature(client, user):
         assert all(transaction['id'] in transaction_ids for transaction in recommendations_response.data['recommendations'])
         assert recommendations_response.data['most_used_category'] == categories_ids[1]  # Ensure the 'most_used_category' matches the category used
 
-# RuntimeWarning: DateTimeField Transaction.date received a naive datetime (2023-07-01 00:00:00) while time zone support is active.
+
+
+
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 @pytest.mark.django_db
-def test_expense_forecasting():
-    # Create a user
-    user = User.objects.create_user(username='testuser', password='12345')
+def test_expense_forecasting(client, user):
+    client = APIClient()
+    client.force_authenticate(user=user)
+    current_app.conf.task_store_eager_result = True
 
     # Create transactions within the current month at random day deltas
     today = timezone.now()
@@ -330,10 +336,41 @@ def test_expense_forecasting():
     forecasted_expenses = average_daily_spending * days_in_current_month
 
     # Get the forecasted expenses using the function
-    calculated_forecast = forecast_expenses(user)
+    forecast_data = forecast_expenses(user.id)
+
+    assert forecast_data["status"] == "Pending"
+
+    # Here you would usually wait for the task to be completed before calling forecast_expenses again. 
+    # But for the test, let's assume that the task is completed instantly.
+
+    forecast_data = forecast_expenses(user.id)
+
+    assert forecast_data["status"] == "Complete"
+
+    calculated_forecast = forecast_data["result"]
 
     # Assert that the calculated forecast matches the expected result
     assert calculated_forecast == pytest.approx(forecasted_expenses, abs=0.01)
+
+    # Get the forecasted expenses using api
+    response = client.get(reverse('api_v1:transaction-forecast-expenses'))
+    forecast_data = response.json()
+
+    assert forecast_data["status"] == "Pending"
+
+    # Here you would usually wait for the task to be completed before calling the API endpoint again. 
+    # But for the test, let's assume that the task is completed instantly.
+
+    response = client.get(reverse('api_v1:transaction-forecast-expenses'))
+    forecast_data = response.json()
+
+    assert forecast_data["status"] == "Complete"
+
+    calculated_forecast = forecast_data["result"]
+
+    # Assert that the calculated forecast matches the expected result
+    forecasted_expenses_decimal = Decimal(forecasted_expenses)
+    assert calculated_forecast == pytest.approx(forecasted_expenses_decimal, abs=Decimal(0.01))
 
 @pytest.mark.django_db
 def test_automatic_categorization_of_transactions():

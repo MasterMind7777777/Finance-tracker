@@ -14,8 +14,16 @@ from django.core.exceptions import ValidationError
 from PIL import Image
 import tempfile
 import os
+from django.test import override_settings
+from celery import current_app
+from django.core.cache import cache
 
 User = get_user_model()
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    cache.clear()
 
 @pytest.fixture
 def client():
@@ -24,7 +32,6 @@ def client():
 @pytest.fixture
 def api_client():
     return APIClient()
-
 
 @pytest.fixture
 def user(db):
@@ -199,47 +206,62 @@ def test_user_decline_friend_request(api_client, user1, user2):
     assert response.status_code == 200
     assert not FriendRequest.objects.filter(pk=friend_request.pk).exists()
 
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+@pytest.mark.django_db
 def test_compare_spending(db, user, user1, user2, category, friend_category, 
                           friend_category2, transactions, friend_transactions, 
                           friend_transactions2, api_client):
+    current_app.conf.task_store_eager_result = True
     
     FriendRequest.objects.create(from_user= user, to_user=user1, accepted=True)
     FriendRequest.objects.create(from_user= user, to_user=user2, accepted=True)
-    # Test category not owned by user 
-    try:
-        result = compare_spending(user.id, [user1.id], friend_category.id)
-        assert False
-    except ValidationError:
-        assert True
 
-    # Test single friend
+    # Test category not owned by user 
     result = compare_spending(user.id, [user1.id], category.id)
+    assert result == {'status': 'Pending'}
+
+    # Check the result again after some time
+    result = compare_spending(user.id, [user1.id], category.id)
+    # Confirm the task has completed
+    assert 'status' in result
+    assert result['status'] == 'Complete'
+    result = result['result']
+    # Verify the results
     assert result['user_total'] == Decimal(100)
     assert result['friends_avg'] == Decimal(200)
     assert result['difference'] == Decimal(-100)
     # Testing friends' spending
-    assert result['friends_spending'] == {user1.id: Decimal('200.00')}
+    assert result['friends_spending'] == {str(user1.id): Decimal('200.00')}
     # Testing number of transactions made by friends
-    assert result['friends_num_transactions'] == {user1.id: 10}
+    assert result['friends_num_transactions'] == {str(user1.id): 10}
     # Testing average transaction amount of friends
-    assert result['friends_avg_transactions'] == {user1.id: Decimal('20.00')}
+    assert result['friends_avg_transactions'] == {str(user1.id): Decimal('20.00')}
 
     # Test multiple friends
     result = compare_spending(user.id, [user1.id, user2.id], category.id)
+    assert result['status'] == 'Pending'
+    result = compare_spending(user.id, [user1.id, user2.id], category.id)
+    assert result['status'] == 'Complete'
+    result = result['result']
     assert result['user_total'] == Decimal(100)
     assert result['friends_avg'] == Decimal(250)
     assert result['difference'] == Decimal(-150)
     # Testing friends' spending
-    assert result['friends_spending'] == {user1.id: Decimal('200.00'), user2.id: Decimal('300.00')}
+    assert result['friends_spending'] == {str(user1.id): Decimal('200.00'), str(user2.id): Decimal('300.00')}
     # Testing number of transactions made by friends
-    assert result['friends_num_transactions'] == {user1.id: 10, user2.id: 10}
+    assert result['friends_num_transactions'] == {
+                                                    str(user1.id): 10, 
+                                                    str(user2.id): 10
+                                                }
     # Testing average transaction amount of friends
-    assert result['friends_avg_transactions'] == {user1.id: Decimal('20.00'), user2.id: Decimal('30.00')}
+    assert result['friends_avg_transactions'] == {str(user1.id): Decimal('20.00'), str(user2.id): Decimal('30.00')}
 
     # Test friends only validation
     nonfriend_user = User.objects.create_user(username='test non friend user', password='12345')
     try:
         result = compare_spending(user.id, [user1.id, user2.id, nonfriend_user.id], category.id)
+        result = compare_spending(user.id, [user1.id, user2.id, nonfriend_user.id], category.id)
+        print(result)
         assert False
     except ValidationError:
         assert True
@@ -253,6 +275,14 @@ def test_compare_spending(db, user, user1, user2, category, friend_category,
     response = api_client.post(reverse('api_v1:category-compare-spending', kwargs={"pk": category.id}), data, format='json')
     assert response.status_code == 200
     response_data = response.json()
+    assert response_data['status'] == 'Pending'
+
+    response = api_client.post(reverse('api_v1:category-compare-spending', kwargs={"pk": category.id}), data, format='json')
+    assert response.status_code == 200
+    response_data = response.json()
+    assert response_data['status'] == 'Complete'
+
+    response_data = response_data['result']
     assert 'user_total' in response_data
     assert response_data['user_total'] == Decimal(100)
     assert 'user_num_transactions' in response_data
@@ -268,7 +298,7 @@ def test_compare_spending(db, user, user1, user2, category, friend_category,
     assert 'friends_num_transactions' in response_data
     assert response_data['friends_num_transactions'] == {str(user1.id): 10, str(user2.id): 10}
     assert 'friends_avg_transactions' in response_data
-    assert result['friends_avg_transactions'] == {user1.id: Decimal('20.00'), user2.id: Decimal('30.00')}
+    assert response_data['friends_avg_transactions'] == {str(user1.id): Decimal('20.00'), str(user2.id): Decimal('30.00')}
 
 def test_profile_picture_upload(client, user):
     client.force_login(user)

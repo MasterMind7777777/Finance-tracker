@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Sum
 from budgets.models import CategoryBudget, CustomBudgetAlert
 from analytics.utils import check_financial_health
+from transactions.utils import forecast_expenses
 from transactions.models import TransactionSplit
 from transactions.models import Category, Transaction, RecurringTransaction
 from .serializers import (
@@ -176,6 +177,11 @@ class TransactionViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
+    @action(detail=False, methods=['get'])
+    def forecast_expenses(self, request):
+        forecast_data = forecast_expenses(request.user.pk)
+        return Response(forecast_data)
+
     @action(detail=True, methods=['post'])
     def split_transaction(self, request, pk=None):
         transaction = self.get_object()

@@ -1,14 +1,14 @@
 import re
 from django.core.serializers.json import DjangoJSONEncoder
+from django.forms import ValidationError
 from .models import Category
-from django.db.models import Sum, Q, Max, Avg
-import calendar
-from datetime import date, datetime, timedelta
+from django.db.models import Max
 from .models import Transaction, RecurringTransaction
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from users.models import FriendRequest
-from django.core.exceptions import ValidationError
+from django.core.cache import cache
+from celery.result import AsyncResult
+from .tasks import compare_spending_task, forecast_expenses_task
 User = get_user_model()
 import nltk
 
@@ -28,26 +28,25 @@ class CategoryEncoder(DjangoJSONEncoder):
             return str(obj)
         return super().default(obj)
 
-def forecast_expenses(user):
-    today = date.today()
-    start_of_month = today.replace(day=1)
-
-    # Calculate the total number of days in the month
-    total_days_in_month = calendar.monthrange(today.year , today.month)[1]
-
-    # Calculate the actual number of days that have passed in the current month
-    days_passed = (today - start_of_month).days + 1
-
-    expenses = Transaction.objects.filter(user=user, date__gte=start_of_month).aggregate(total_expenses=Sum('amount'))
-    total_expenses = expenses['total_expenses'] or 0
-
-    # Calculate the average daily expenses
-    avg_daily_expenses = total_expenses / days_passed
-
-    # Calculate the forecasted expenses for the remaining days of the month
-    forecast_next_month = avg_daily_expenses * total_days_in_month
-
-    return forecast_next_month
+def forecast_expenses(user_id):
+    # The key is 'forecast_expenses_task' + user_id
+    cache_key = f'forecast_expenses_task_{user_id}'
+    task_id = cache.get(cache_key)
+    
+    if task_id is None:
+        # The task has not been launched yet, so we do it and store the task id in cache
+        result = forecast_expenses_task.delay(user_id)
+        cache.set(cache_key, str(result.id))
+        return {"status": "Pending"}
+    else:
+        # A task has been launched in the past, we check its status
+        result = AsyncResult(task_id)
+        if result.ready():
+            # If the task is ready, we clear the cache and return the result
+            cache.delete(cache_key)
+            return {"status": "Complete", "result": result.get()}
+        else:
+            return {"status": "Pending"}
 
 def categorize_transaction(transaction_id, user_id):
     # Retrieve the uncategorized transaction
@@ -162,97 +161,22 @@ def create_new_transaction(recurring_transaction):
     )
 
 def compare_spending(user_id, friends_ids, category_id, period_days=30):
-    user = User.objects.get(pk=user_id)
-    try:
-        category = Category.objects.get(pk=category_id, user=user)
-    except Category.DoesNotExist:
-        raise ValidationError(f"{category_id} is not one of categories of current user.")
-
-    # Calculate the start date of the period
-    start_date = datetime.now() - timedelta(days=period_days)
-
-    # Get the user's transactions in the category during the period
-    user_transactions = Transaction.objects.filter(user=user, category=category, date__gte=start_date)
-
-    # Calculate the total spending of the user in the category during the period
-    user_total = sum(transaction.amount for transaction in user_transactions)
-
-    # Calculate the number of transactions and average transaction amount for the user
-    user_num_transactions = len(user_transactions)
-    user_avg_transaction = user_total / user_num_transactions if user_transactions else 0
-
-    # Get the friends
-    # Fetch all accepted friend requests related to current user
-    accepted_friend_requests = FriendRequest.objects.filter(
-        Q(from_user=user) | Q(to_user=user), 
-        accepted=True
-    )
-
-    # Extract friend users from accepted friend requests
-    friends = set()  # Use a set to avoid duplicates
-    for request in accepted_friend_requests:
-        # If current user is the sender, then the friend is the receiver, and vice versa
-        friend = request.to_user if request.from_user == user else request.from_user
-        if friend.pk in friends_ids:
-            friends.add(friend)
-
-
-    # Validation that non friends data was not requested
-    friend_ids = {friend.pk for friend in friends}
-    if not set(friends_ids).issubset(friend_ids):
-        raise ValidationError("One or more of the provided friend IDs are not friends of the current user")
-
+    cache_key = f'compare_spending_task_{user_id}_{category_id}'
+    task_id = cache.get(cache_key)
     
-    # Find the best matching category for each friend
-    best_matching_categories = {}
-    friends_spending = {}
-    friends_num_transactions = {}
-    friends_avg_transactions = {}
-    for friend in friends:
-        friend_categories = Category.objects.filter(user=friend)
-        category_scores = {}
-        for friend_category in friend_categories:
-            score = calculate_similarity(extract_keywords(friend_category.name), extract_keywords(category.name))
-            category_scores[friend_category] = score
-        # Sort the category scores in descending order
-        sorted_scores = sorted(category_scores.items(), key=lambda x: x[1], reverse=True)
-        chosen_category = sorted_scores[0][0]
-        best_matching_categories[friend] = chosen_category
-
-        # Calculate each friend's spending in the best matching category during the period
-        friend_transactions = Transaction.objects.filter(user=friend, category=chosen_category, date__gte=start_date)
-        friend_total = sum(transaction.amount for transaction in friend_transactions)
-        friends_spending[friend.pk] = friend_total
-
-        # Calculate the number of transactions and average transaction amount for each friend
-        friend_num_transactions = len(friend_transactions)
-        friend_avg_transaction = friend_total / friend_num_transactions if friend_transactions else 0
-        friends_num_transactions[friend.pk] = friend_num_transactions
-        friends_avg_transactions[friend.pk] = friend_avg_transaction
-
-    # Get the transactions for all friends in the period
-    all_friends_transactions = Transaction.objects.filter(user__in=friends, date__gte=start_date)
-
-    # Filter the transactions based on the best matching categories
-    friends_transactions = [
-        transaction for transaction in all_friends_transactions.iterator() 
-        if best_matching_categories[transaction.user] == transaction.category
-    ]
-
-    # Calculate the average spending of the friends in the best matching categories during the period
-    friends_count = len(friends)
-    friends_avg = sum(transaction.amount for transaction in friends_transactions) / friends_count if friends_transactions else 0
-
-    # Calculate the difference between the user's spending and the friends' average spending
-    difference = user_total - friends_avg
-
-    return {
-        'user_total': user_total,
-        'user_num_transactions': user_num_transactions,
-        'user_avg_transaction': user_avg_transaction,
-        'friends_avg': friends_avg,
-        'difference': difference,
-        'friends_spending': friends_spending,
-        'friends_num_transactions': friends_num_transactions,
-        'friends_avg_transactions': friends_avg_transactions,
-    }
+    if task_id is None:
+        result = compare_spending_task.delay(user_id, friends_ids, category_id, period_days)
+        cache.set(cache_key, str(result.id))
+        return {"status": "Pending"}
+    else:
+        result = AsyncResult(task_id)
+        if result.ready():
+            if result.result['status'] == 'Pending':
+                return {"status": "Pending"}
+            elif result.result['status'] == 'Error':
+                cache.delete(cache_key)
+                raise ValidationError(result.result['message'])
+            cache.delete(cache_key)
+            return result.get()
+        else:
+            return {"status": "Pending"}

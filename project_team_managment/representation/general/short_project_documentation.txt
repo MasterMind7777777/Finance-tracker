@@ -14,7 +14,7 @@ budget_overview: Shows a user's budget overview.
 delete_budget: Erases a specific budget category.
 CategoryBudgetViewSet: CRUD operations +
   alerts: Generates a list of categories where the user's spending has exceeded their established budget limits. Also create PushNotification. [celery]
-  create_custom_alert: Allows users to set custom alerts for soft budget thresholds.[celery]
+  create_custom_alert: Allows users to set custom alerts for soft budget thresholds. [celery]
 
 Transactions:
 add_transaction: Creates a new transaction.
@@ -24,15 +24,15 @@ manage_categories: Manages categories, including form submissions and creating n
 delete_category: Erases a specific category.
 transaction_list: Displays a list of transactions.
 transaction_detail: Shows specific transaction details.
-forecast_expenses: Estimates a user's monthly expenses based on average daily spend.
 CategoryViewSet: CRUD operations +
-  compare_spending: Calculates and compares the spending of a user and their friends within a specified category over a given period.
+  compare_spending: Calculates and compares the spending of a user and their friends within a specified category over a given period. [celery]
 TransactionViewSet: CRUD operations +
   recommendations: Suggests transactions to the user based on their most frequently used category.
   assign_category: Uses keywords in a transaction's description and name to categorize the transaction automatically.
   apply_recurring_transactions: create transactions planed by RecurringTransaction.
   bulk_upload: Allow users to upload many transactions at once from csv
   split_transaction: Splits a transaction among multiple users and returns the split details.
+  forecast_expenses: Estimates a user's monthly expenses based on average daily spend. [celery]
 TransactionSplitViewSet: Allows users to accept or decline transaction splits
 
 Users:
