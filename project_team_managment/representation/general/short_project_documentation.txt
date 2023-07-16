@@ -28,7 +28,7 @@ CategoryViewSet: CRUD operations +
   compare_spending: Calculates and compares the spending of a user and their friends within a specified category over a given period. [celery]
 TransactionViewSet: CRUD operations +
   recommendations: Suggests transactions to the user based on their most frequently used category.
-  assign_category: Uses keywords in a transaction's description and name to categorize the transaction automatically.
+  assign_category: Uses keywords in a transaction's description and name to categorize the transaction automatically. [celery]
   apply_recurring_transactions: create transactions planed by RecurringTransaction.
   bulk_upload: Allow users to upload many transactions at once from csv
   split_transaction: Splits a transaction among multiple users and returns the split details.

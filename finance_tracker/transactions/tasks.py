@@ -1,5 +1,5 @@
 from decimal import Decimal
-from celery import chord, shared_task
+from celery import chain, chord, group, shared_task
 from datetime import date
 import calendar
 from django.db.models import Sum
@@ -131,6 +131,7 @@ def compare_spending_task(user_id, friends_ids, category_id, period_days=30):
             }
         elif result.ready(): # If the task is ready, but subtasks are pending
             output = result.result
+            print(output)
             if output['status'] == 'Pending':
                 return {
                     'status': 'Pending'
@@ -212,6 +213,7 @@ def process_friend_data_task(friend_id, category_name, start_date, period_days):
         else:
             result_status = check_calculate_category_similarity_task(task_id)
             result_status = check_calculate_category_similarity_task(task_id) #FIXME
+            print(result_status)
             if result_status['status'] == 'Pending':
                 return {
                     'status': 'Pending'
@@ -267,8 +269,8 @@ def check_calculate_category_similarity_task(task_id):
     # Check if both subtasks are ready
     if AsyncResult(subtask1_id).ready() and AsyncResult(subtask2_id).ready():
         # Get the results of the subtasks
-        keywords1 = AsyncResult(subtask1_id).result
-        keywords2 = AsyncResult(subtask2_id).result
+        keywords1 = AsyncResult(subtask1_id).result['keywords']
+        keywords2 = AsyncResult(subtask2_id).result['keywords']
     else:
         return {"status": "Pending"}
 
@@ -278,7 +280,7 @@ def check_calculate_category_similarity_task(task_id):
     if similarity_task_id is not None:
         similarity_task = AsyncResult(similarity_task_id)
         if similarity_task.ready():
-            similarity_task_result = similarity_task.result
+            similarity = similarity_task.result
             # Clean up the cache
             cache.delete(f"{task_id}_subtask1_id")
             cache.delete(f"{task_id}_subtask2_id")
@@ -287,7 +289,7 @@ def check_calculate_category_similarity_task(task_id):
             return {
                 "status": "Complete", 
                 "result": {
-                    "score": similarity_task_result,
+                    "score": similarity,
                     "friend_category": result['friend_category']
                 }
             }
@@ -302,9 +304,47 @@ def check_calculate_category_similarity_task(task_id):
 
         return {"status": "Pending"}
 
+@shared_task(bind=True)
+def categorize_transaction_task(self, transaction_id, user_id):
+    # Define a cache key for this task
+
+    # The task hasn't been initiated yet, proceed with the task
+    uncategorized_transaction = Transaction.objects.get(id=transaction_id)
+
+    text = uncategorized_transaction.title + ' ' + uncategorized_transaction.description
+
+    # Create a chain of tasks starting with find_matching_category_task
+    task_chain = find_matching_category_task.s(text, user_id, transaction_id)
+    task_chain_result = task_chain.apply_async()
+
+    # Save the task data to the cache
+    return {"status": "Pending"}
+
+
+@shared_task(bind=True)
+def find_matching_category_task(self, text, user_id, transaction_id):
+    categories = Category.objects.filter(user=user_id)
+
+    original_text_keywords_task = extract_keywords_task(text)
+    keyword_tasks = []
+    for category in categories:
+        related_transactions = Transaction.objects.filter(category=category)
+        for transaction in related_transactions:
+            keyword_tasks.append(
+                extract_keywords_task.s(transaction.title + ' ' + transaction.description, category.id)
+            )
+
+    callback_subtask = calculate_similarity_task_chain.s(original_text_keywords_task['keywords']) | on_all_tasks_done.s(transaction_id)
+    task_chain = chord(keyword_tasks, callback_subtask)
+    task_chain_result = task_chain.apply_async()
+
+    cache_key = f"categorize_transaction_task_{transaction_id}_{user_id}"
+    cache.set(cache_key, task_chain_result.id)
+
+    return {"status": "Pending", "job_id": task_chain_result.id}
+
 @shared_task
-def extract_keywords_task(text):
-    # Remove special characters and convert text to lowercase
+def extract_keywords_task(text, category_id=None):
     cleaned_text = re.sub(r'[^a-zA-Z0-9\s]', '', text.lower())
 
     # Tokenize the cleaned text into individual words
@@ -312,21 +352,38 @@ def extract_keywords_task(text):
 
     # Remove common stop words
     stop_words = set(stopwords.words('english'))
-    words = [word for word in words if word not in stop_words]
-    return words
+    keywords = [word for word in words if word not in stop_words]
+    return {"keywords": keywords, "category_id": category_id}
 
-@shared_task
-def calculate_similarity_task(keywords1, keywords2):
+@shared_task(bind=True)
+def calculate_similarity_task(self, keywords1, keywords2, ):
     set1 = set(keywords1)
     set2 = set(keywords2)
-
-    # Calculate the intersection of the two sets
     intersection = set1.intersection(set2)
-
-    # Calculate the union of the two sets
     union = set1.union(set2)
-
-    # Calculate the Jaccard similarity coefficient
     similarity = len(intersection) / len(union)
-
     return similarity
+
+@shared_task(bind=True)
+def calculate_similarity_task_chain(self, results, original_text_keywords):
+    similarities = {}
+    for res in results:
+        keywords1 = original_text_keywords
+        keywords2 = res['keywords']
+        category_id = res['category_id']
+        set1 = set(keywords1)
+        set2 = set(keywords2)
+        intersection = set1.intersection(set2)
+        union = set1.union(set2)
+        similarity = len(intersection) / len(union)
+        similarities[category_id] = similarity
+    output = {'status': 'Complete', 'result': similarities, }
+    return output
+
+@shared_task
+def on_all_tasks_done(results, transaction_id):
+    # Find the result with the highest similarity
+    highest_similarity_result = max(results['result'].items(), key=lambda x: x[1])
+    output = {"status": "Complete", "best_matching_category": highest_similarity_result[0]}
+    return output
+

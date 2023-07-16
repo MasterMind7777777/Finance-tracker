@@ -1,4 +1,5 @@
 import re
+import time
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import ValidationError
 from .models import Category
@@ -8,7 +9,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from celery.result import AsyncResult
-from .tasks import compare_spending_task, forecast_expenses_task
+from .tasks import categorize_transaction_task, compare_spending_task, forecast_expenses_task
 User = get_user_model()
 import nltk
 
@@ -49,69 +50,29 @@ def forecast_expenses(user_id):
             return {"status": "Pending"}
 
 def categorize_transaction(transaction_id, user_id):
-    # Retrieve the uncategorized transaction
-    uncategorized_transaction = Transaction.objects.get(id=transaction_id)
+    cache_key = f"categorize_transaction_task_{transaction_id}_{user_id}"
+    task_id = cache.get(cache_key)
 
-    # Define the available categories based on the user ID
-    categories = Category.objects.filter(user=user_id)
-
-    # Extract keywords from the transaction name and description
-    transaction_keywords = extract_keywords(uncategorized_transaction.title + ' ' + uncategorized_transaction.description)
-
-    # Find the most suitable category based on the keywords and existing transactions
-    chosen_category = find_matching_category(transaction_keywords, categories)
-
-    # Categorize the transaction
-    uncategorized_transaction.category = chosen_category
-    uncategorized_transaction.save()
-
-def extract_keywords(text):
-    # Remove special characters and convert text to lowercase
-    cleaned_text = re.sub(r'[^a-zA-Z0-9\s]', '', text.lower())
-
-    # Tokenize the cleaned text into individual words
-    words = word_tokenize(cleaned_text)
-
-    # Remove common stop words
-    stop_words = set(stopwords.words('english'))
-    words = [word for word in words if word not in stop_words]
-    return words
-
-def find_matching_category(keywords, categories):
-    category_scores = {}
-
-    for category in categories:
-        related_transactions = Transaction.objects.filter(category=category)
-
-        # Extract keywords from related transactions
-        related_keywords = []
-        for transaction in related_transactions:
-            related_keywords.extend(extract_keywords(transaction.title + ' ' + transaction.description))
-
-        score = calculate_similarity(keywords, related_keywords)
-        category_scores[category] = score
-
-    # Sort the category scores in descending order
-    sorted_scores = sorted(category_scores.items(), key=lambda x: x[1], reverse=True)
-
-    # Return the category with the highest score
-    
-    chosen_category = sorted_scores[0][0]
-    return chosen_category
-
-def calculate_similarity(keywords1, keywords2):
-    set1 = set(keywords1)
-    set2 = set(keywords2)
-
-    # Calculate the intersection of the two sets
-    intersection = set1.intersection(set2)
-
-    # Calculate the union of the two sets
-    union = set1.union(set2)
-    # Calculate the Jaccard similarity coefficient
-    similarity = len(intersection) / len(union)
-
-    return similarity
+    if not task_id:
+        # Initiate the task and store its ID and status in the cache
+        task = categorize_transaction_task.delay(transaction_id, user_id)
+        task_id = task.id
+        return {"status": "Pending"}
+    else:
+        # Check the status of the task
+        task = AsyncResult(task_id)
+        if task.ready():
+            task_result = task.result
+            if task_result['status'] == 'Pending':
+                return {"status": "Pending"}
+            category = Category.objects.get(pk=task_result['best_matching_category'])
+            transaction = Transaction.objects.get(pk=transaction_id)
+            transaction.category = category
+            transaction.save()
+            cache.delete(cache_key)
+            return task_result
+        else:
+            return {"status": "Pending"}
 
 def apply_recurring_transactions():
     # Current date

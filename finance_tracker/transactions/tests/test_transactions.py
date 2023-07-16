@@ -22,12 +22,17 @@ from transactions.utils import forecast_expenses
 import os
 from django.test import override_settings
 from celery import current_app
+from django.core.cache import cache
 
 User = get_user_model()
 
 @pytest.fixture
 def client():
     return Client()
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    cache.clear()
 
 @pytest.fixture
 def user(db):
@@ -372,10 +377,13 @@ def test_expense_forecasting(client, user):
     forecasted_expenses_decimal = Decimal(forecasted_expenses)
     assert calculated_forecast == pytest.approx(forecasted_expenses_decimal, abs=Decimal(0.01))
 
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 @pytest.mark.django_db
 def test_automatic_categorization_of_transactions():
     # create test user
     user = User.objects.create(username="test_user", password="test_password")
+
+    current_app.conf.task_store_eager_result = True
 
     # create categories
     categories = [
@@ -411,9 +419,15 @@ def test_automatic_categorization_of_transactions():
     uncategorized_transaction = Transaction.objects.create(user=user, title="Subscribe to a streamer", description="Yearly subscription for my fevorite stremer", amount=10)
 
     # categorize the transaction automatically
-    found_category = categorize_transaction(uncategorized_transaction.id, user)
+    found_category = categorize_transaction(uncategorized_transaction.id, user.id)
     uncategorized_transaction.refresh_from_db()
+    assert found_category['status'] == 'Pending'
+    print(found_category)
+    found_category = categorize_transaction(uncategorized_transaction.id, user.id)
+    assert found_category['status'] == 'Complete'
+    print(found_category)
 
+    uncategorized_transaction.refresh_from_db()
     # check if the transaction has been categorized
     assert uncategorized_transaction.category is not None
     assert uncategorized_transaction.category.name == "Subscriptions"  # Assuming Subscribe to a streamer falls under "Subscriptions" category
@@ -429,6 +443,12 @@ def test_automatic_categorization_of_transactions():
 
     # construct the URL for the assign_category endpoint
     url = reverse('api_v1:transaction-assign_category', kwargs={'transaction_id': uncategorized_transaction2.id})
+
+    # make a POST request to assign the category
+    response = client.post(url)
+
+    # check the response status code
+    assert response.status_code == 200
 
     # make a POST request to assign the category
     response = client.post(url)
