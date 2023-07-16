@@ -1,16 +1,17 @@
 from decimal import Decimal
-from celery import chain, chord, group, shared_task
+from celery import chord, shared_task
 from datetime import date
 import calendar
 from django.db.models import Sum
 import re
 from users.models import FriendRequest
-from transactions.models import Transaction, Category
+from transactions.models import Transaction, Category, RecurringTransaction
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import Q, Max
 from datetime import datetime, timedelta
 from celery.result import AsyncResult
+from django.utils import timezone
 import nltk
 
 nltk.data.path.append('C:/projects/Finance-tracker/finance_tracker/nltk')
@@ -47,7 +48,8 @@ def forecast_expenses_task(self, user_id):
 
     # Calculate the forecasted expenses for the remaining days of the month
     forecast_next_month = avg_daily_expenses * total_days_in_month
-
+    print(f'Task ID: {self.request.id}')
+    print(forecast_next_month)
     return forecast_next_month
 
 @shared_task
@@ -387,3 +389,36 @@ def on_all_tasks_done(results, transaction_id):
     output = {"status": "Complete", "best_matching_category": highest_similarity_result[0]}
     return output
 
+@shared_task
+def apply_recurring_transactions_task(frequency):
+    current_date = timezone.now().date()
+
+    latest_transaction_dates = Transaction.objects.filter(
+        recurring_transaction__isnull=False,
+        recurring_transaction__frequency=frequency,
+        date__date__lt=current_date
+    ).values('recurring_transaction').annotate(latest_date=Max('date__date'))
+
+    recurring_transactions = RecurringTransaction.objects.filter(
+        pk__in=[item['recurring_transaction'] for item in latest_transaction_dates]
+    )
+
+    transactions_to_create = []
+
+    for transaction_date in latest_transaction_dates:
+        recurring_transaction = next(
+            rt for rt in recurring_transactions if rt.pk == transaction_date['recurring_transaction']
+        )
+        latest_date = transaction_date['latest_date']
+
+        if recurring_transaction.frequency == frequency and (current_date - latest_date).days >= 1:
+            transactions_to_create.append(
+                Transaction(
+                user=recurring_transaction.user,
+                title=f'Recurring Transaction {recurring_transaction.id}',
+                amount=recurring_transaction.amount,
+                category=recurring_transaction.category,
+                date=timezone.now(),
+                recurring_transaction=recurring_transaction))
+
+    Transaction.objects.bulk_create(transactions_to_create)

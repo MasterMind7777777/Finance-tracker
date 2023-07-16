@@ -1,6 +1,6 @@
-import csv
 import datetime
 from decimal import Decimal
+import time
 import pytest
 import json
 from django.utils.timezone import make_aware
@@ -10,7 +10,8 @@ from django.test import Client, override_settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from transactions.models import TransactionSplit
-from transactions.utils import categorize_transaction, apply_recurring_transactions
+from transactions.utils import categorize_transaction
+from transactions.tasks import apply_recurring_transactions_task, forecast_expenses_task
 from transactions.models import Transaction, Category
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -309,14 +310,11 @@ def test_transaction_recommendation_feature(client, user):
         assert all(transaction['id'] in transaction_ids for transaction in recommendations_response.data['recommendations'])
         assert recommendations_response.data['most_used_category'] == categories_ids[1]  # Ensure the 'most_used_category' matches the category used
 
-
-
-
-@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 @pytest.mark.django_db
 def test_expense_forecasting(client, user):
     client = APIClient()
     client.force_authenticate(user=user)
+
     current_app.conf.task_store_eager_result = True
 
     # Create transactions within the current month at random day deltas
@@ -348,6 +346,8 @@ def test_expense_forecasting(client, user):
     # Here you would usually wait for the task to be completed before calling forecast_expenses again. 
     # But for the test, let's assume that the task is completed instantly.
 
+
+    time.sleep(5)
     forecast_data = forecast_expenses(user.id)
 
     assert forecast_data["status"] == "Complete"
@@ -489,7 +489,7 @@ def test_recurring_transactions(user):
     recurring_transaction_id = response.data['id']
 
     # Simulate the application of recurring transactions
-    apply_recurring_transactions()
+    apply_recurring_transactions_task.delay('monthly')
 
     response = client.get(url, {'user': user.id, 'category': category.id, 'amount': 500}, format='json')
 
@@ -524,7 +524,7 @@ def test_recurring_transactions(user):
         assert response.status_code == status.HTTP_201_CREATED
 
         # Simulate the application of recurring transactions
-        apply_recurring_transactions()
+        apply_recurring_transactions_task.delay(frequency)
 
         response = client.get(url, {'user': user.id, 'category': category.id, 'amount': 500}, format='json')
         assert response.status_code == status.HTTP_200_OK
