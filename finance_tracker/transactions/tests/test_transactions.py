@@ -556,6 +556,7 @@ def test_recurring_transactions(user):
 
 def test_transactions_bulk_upload(client, user, category1, category2, category3):
     client.force_login(user)
+    current_app.conf.task_store_eager_result = True
 
     # Get the current directory
     current_directory = os.getcwd()
@@ -574,8 +575,19 @@ def test_transactions_bulk_upload(client, user, category1, category2, category3)
     
     print(response.json())
     
-    assert response.status_code == 200
-    assert Transaction.objects.filter(user=user).count() > 0
+
+    tansactions = Transaction.objects.filter(user=user)
+    assert response.status_code == 202
+    assert tansactions.count() == 101
+
+
+    first_transaction = tansactions.first()
+    assert first_transaction.title == 'Transaction 1'
+    assert first_transaction.description == 'Description 1'
+    assert first_transaction.amount == 100.00
+    assert first_transaction.category.id == 1
+    expected_date = datetime.strptime('2023-07-12 13:45', '%Y-%m-%d %H:%M').replace(tzinfo=timezone.utc)
+    assert first_transaction.date == expected_date
 
 def test_multiple_currencies(client, user, category1):
     client.force_login(user)

@@ -1,9 +1,13 @@
+import csv
 from decimal import Decimal
+import io
 from celery import chain, chord, group, shared_task
 from datetime import date, timezone
 import calendar
 from django.db.models import Sum, Q, Max
 import re
+
+from django.http import JsonResponse
 from users.models import FriendRequest
 from transactions.models import Transaction, Category, RecurringTransaction
 from django.contrib.auth import get_user_model
@@ -423,3 +427,75 @@ def apply_recurring_transactions_task(frequency):
                 recurring_transaction=recurring_transaction))
 
     Transaction.objects.bulk_create(transactions_to_create)
+
+@shared_task
+def process_transactions_chunk(transactions):
+    # Process a chunk of transactions
+    try:
+        Transaction.objects.bulk_create(transactions)
+        return {'status': 'Complete'}
+    except Exception as e:
+        return {'status': f'Error: {e}'}
+
+
+@shared_task
+def prepare_transactions_chunks(file_content, user_id):
+    try:
+        file_wrapper = io.StringIO(file_content)
+        reader = csv.DictReader(file_wrapper)
+        transactions = []
+        category_ids = set()
+
+        chunks = []
+        chunk_size = 100
+
+        for index, row in enumerate(reader):
+            category_id = row['category_id']
+            category_ids.add(category_id)
+
+            transaction = Transaction(
+                user_id=user_id,
+                category_id=category_id,
+                title=row['title'],
+                description=row['description'],
+                amount=row['amount'],
+                date=row['date']
+            )
+            transactions.append(transaction)
+
+            if index % chunk_size == 0 and index > 0:
+                chunks.append(process_transactions_chunk.si(transactions))
+                transactions = []
+
+        # Last chunk
+        if transactions:
+            chunks.append(process_transactions_chunk.si(transactions))
+
+        categories_exist = Category.objects.filter(id__in=category_ids).values_list('id', flat=True)
+
+        # Convert category_ids to a set of integers
+        category_ids = set(map(int, category_ids))
+
+        # Perform the comparison
+        if set(categories_exist) != category_ids:
+            return {'message': 'Invalid category IDs.'}
+
+        chord(chunks)(finalize_transactions_upload.s(user_id))
+
+    except Exception as e:
+        # Handle the exception here
+        print({'message': f'Error occurred: {str(e)}'})
+        return {'message': f'Error occurred: {str(e)}'}
+
+    return {'message': 'No file uploaded.'}
+
+
+@shared_task
+def finalize_transactions_upload(result, user):
+    # Fetch the updated transactions from the database
+    updated_transactions = Transaction.objects.filter(user=user)
+
+    if updated_transactions.exists():
+        return {'message': 'Transactions uploaded successfully.'}
+    else:
+        return {'message': 'Failed to create transactions.'}

@@ -1,5 +1,7 @@
 from decimal import Decimal
 import io
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.base import ContentFile
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -37,6 +39,7 @@ from transactions.utils import categorize_transaction, compare_spending
 import csv
 from django.core.cache import cache
 from budgets.tasks import generate_budget_alerts, check_budget_alerts
+from transactions.tasks import prepare_transactions_chunks
 from celery import current_task
 from celery.result import AsyncResult
 from finance_tracker.celery import app
@@ -207,51 +210,24 @@ class TransactionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['POST'])
     def bulk_upload(self, request):
         file = request.FILES.get('file')
-        if file:
-            try:
-                # Read and print the file content for debugging
-                file_wrapper = io.TextIOWrapper(file, encoding='utf-8')  # Convert to text mode))
-                reader = csv.DictReader(file_wrapper)
-                transactions = []
-                category_ids = set()
+        user_id = request.user.id
+        if file and user_id:
+            # Convert file content to string
+            file_content = file.read().decode('utf-8')
 
-                for row in reader:
-                    category_id = row['category_id']
-                    category_ids.add(category_id)
+            # Reconstruct the file because file.read() was already called
+            file = InMemoryUploadedFile(
+                ContentFile(file_content.encode('utf-8')),
+                'file',
+                file.name,
+                file.content_type,
+                len(file_content),
+                file.charset
+            )
 
-                    transaction = Transaction(
-                        user=request.user,
-                        title=row['title'],
-                        description=row['description'],
-                        amount=row['amount'],
-                        date=row['date']
-                    )
-                    transactions.append(transaction)
-
-                categories_exist = Category.objects.filter(id__in=category_ids).values_list('id', flat=True)
-
-                # Convert category_ids to a set of integers
-                category_ids = set(map(int, category_ids))
-
-                # Perform the comparison
-                if set(categories_exist) != category_ids:
-                    return JsonResponse({'message': 'Invalid category IDs.'}, status=400)
-
-                Transaction.objects.bulk_create(transactions)
-
-                # Fetch the updated transactions from the database
-                updated_transactions = Transaction.objects.filter(user=request.user)
-
-                if updated_transactions.exists():
-                    return JsonResponse({'message': 'Transactions uploaded successfully.'}, status=200)
-                else:
-                    return JsonResponse({'message': 'Failed to create transactions.'}, status=500)
-
-            except Exception as e:
-                # Handle the exception here
-                return JsonResponse({'message': f'Error occurred: {str(e)}'}, status=500)
-
-        return JsonResponse({'message': 'No file uploaded.'}, status=400)
+            prepare_transactions_chunks.delay(file_content, user_id)
+            return JsonResponse({'status': 'Pending'}, status=202)
+        return JsonResponse({'error': 'No file provided.'}, status=400)
     
     @action(detail=False, methods=['GET'])
     def recommendations(self, request):
