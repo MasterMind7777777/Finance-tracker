@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from celery.result import AsyncResult
-from .tasks import categorize_transaction_task, compare_spending_task, forecast_expenses_task
+from .tasks import categorize_transaction_task, compare_spending_task, forecast_expenses_task, apply_recurring_transactions_task
 User = get_user_model()
 import nltk
 
@@ -74,41 +74,9 @@ def categorize_transaction(transaction_id, user_id):
         else:
             return {"status": "Pending"}
 
-def apply_recurring_transactions():
-    # Current date
-    current_date = timezone.now().date()
-
-    # Retrieve the latest transaction dates for each recurring transaction
-    latest_transaction_dates = Transaction.objects.filter(
-        recurring_transaction__isnull=False,
-        date__date__lt=current_date
-    ).values('recurring_transaction').annotate(latest_date=Max('date__date'))
-
-    # Get the recurring transactions for the latest dates
-    recurring_transactions = RecurringTransaction.objects.filter(
-        pk__in=[item['recurring_transaction'] for item in latest_transaction_dates]
-    )
-
-    # Create a list of transactions to create
-    transactions_to_create = []
-
-    for transaction_date in latest_transaction_dates:
-        recurring_transaction = next(
-            rt for rt in recurring_transactions if rt.pk == transaction_date['recurring_transaction']
-        )
-        latest_date = transaction_date['latest_date']
-
-        if recurring_transaction.frequency == 'daily' and (current_date - latest_date).days >= 1:
-            transactions_to_create.append(create_new_transaction(recurring_transaction))
-        elif recurring_transaction.frequency == 'weekly' and (current_date - latest_date).days >= 7:
-            transactions_to_create.append(create_new_transaction(recurring_transaction))
-        elif recurring_transaction.frequency == 'monthly' and (current_date.month != latest_date.month or current_date.year != latest_date.year):
-            transactions_to_create.append(create_new_transaction(recurring_transaction))
-        elif recurring_transaction.frequency == 'yearly' and current_date.year != latest_date.year:
-            transactions_to_create.append(create_new_transaction(recurring_transaction))
-
-    # Bulk create the new transactions
-    Transaction.objects.bulk_create(transactions_to_create)
+def apply_recurring_transactions(frequency):
+    task_id = apply_recurring_transactions_task.delay(frequency)
+    return {"status": "Pending", "task_id": task_id}
 
 def create_new_transaction(recurring_transaction):
     # Create a new Transaction instance with the properties from the recurring transaction

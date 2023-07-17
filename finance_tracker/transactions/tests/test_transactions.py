@@ -496,7 +496,7 @@ def test_recurring_transactions(user):
     recurring_transaction_id = response.data['id']
 
     # Simulate the application of recurring transactions
-    apply_recurring_transactions()
+    apply_recurring_transactions('monthly')
 
     response = client.get(url, {'user': user.id, 'category': category.id, 'amount': 500}, format='json')
 
@@ -531,7 +531,7 @@ def test_recurring_transactions(user):
         assert response.status_code == status.HTTP_201_CREATED
 
         # Simulate the application of recurring transactions
-        apply_recurring_transactions()
+        apply_recurring_transactions(frequency)
 
         response = client.get(url, {'user': user.id, 'category': category.id, 'amount': 500}, format='json')
         assert response.status_code == status.HTTP_200_OK
