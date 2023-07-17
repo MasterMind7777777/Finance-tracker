@@ -39,8 +39,12 @@ def forecast_expenses_task(self, user_id):
     # Calculate the actual number of days that have passed in the current month
     days_passed = (today - start_of_month).days + 1
 
+    print('days_passed task')
+    print(days_passed)
+
     expenses = Transaction.objects.filter(user=user, date__gte=start_of_month).aggregate(total_expenses=Sum('amount'))
     total_expenses = expenses['total_expenses'] or 0
+
 
     # Calculate the average daily expenses
     avg_daily_expenses = total_expenses / days_passed

@@ -15,7 +15,7 @@ from transactions.models import Transaction, Category
 from rest_framework.test import APIClient
 from rest_framework import status
 import calendar
-from datetime import timedelta, datetime
+from datetime import date, timedelta, datetime
 from django.utils import timezone
 import random
 from transactions.utils import forecast_expenses
@@ -320,8 +320,8 @@ def test_expense_forecasting(client, user):
     current_app.conf.task_store_eager_result = True
 
     # Create transactions within the current month at random day deltas
-    today = timezone.now()
-    start_of_month = timezone.make_aware(datetime(today.year, today.month, 1))
+    today = date.today()
+    start_of_month = today.replace(day=1)
 
     _, days_in_current_month = calendar.monthrange(today.year, today.month)
     
@@ -335,7 +335,12 @@ def test_expense_forecasting(client, user):
     transactions_within_month = Transaction.objects.filter(user=user, date__gte=start_of_month)
     total_expenses = sum(transaction.amount for transaction in transactions_within_month)
 
-    average_daily_spending = total_expenses / ((today - start_of_month).days + 1) 
+
+    days_passed = (today - start_of_month).days + 1
+
+    print('days_passed test')
+    print(days_passed)
+    average_daily_spending = total_expenses / days_passed
 
     # Calculate the forecasted expenses for the current month
     forecasted_expenses = average_daily_spending * days_in_current_month
@@ -354,8 +359,10 @@ def test_expense_forecasting(client, user):
 
     calculated_forecast = forecast_data["result"]
 
+
+    print(type(float(calculated_forecast)))
     # Assert that the calculated forecast matches the expected result
-    assert calculated_forecast == pytest.approx(forecasted_expenses, abs=0.01)
+    assert float(calculated_forecast) == pytest.approx(float(forecasted_expenses), abs=0.01)
 
     # Get the forecasted expenses using api
     response = client.get(reverse('api_v1:transaction-forecast-expenses'))
@@ -375,7 +382,7 @@ def test_expense_forecasting(client, user):
 
     # Assert that the calculated forecast matches the expected result
     forecasted_expenses_decimal = Decimal(forecasted_expenses)
-    assert calculated_forecast == pytest.approx(forecasted_expenses_decimal, abs=Decimal(0.01))
+    assert float(calculated_forecast) == pytest.approx(float(forecasted_expenses_decimal), abs=0.01)
 
 @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 @pytest.mark.django_db
