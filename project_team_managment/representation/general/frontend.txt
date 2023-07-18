@@ -1,0 +1,3 @@
+/login - alows user to log in
+/ - home page does nothing for now
+/users - lists all users

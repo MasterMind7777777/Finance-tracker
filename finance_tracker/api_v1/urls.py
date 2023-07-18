@@ -1,10 +1,13 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
-
 from .views import (CategoryBudgetViewSet, CategoryViewSet, 
                     TransactionViewSet, FinancialHealthView, 
                     SavingGoalViewSet, UserViewSet,
                     TransactionSplitViewSet)
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 app_name = 'api_v1'
 
@@ -17,6 +20,8 @@ router.register(r'saving_goals', SavingGoalViewSet, basename='savinggoal')
 
 
 urlpatterns = [
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('budgets/alerts/', CategoryBudgetViewSet.as_view({'get': 'alerts'}), name='budget-alerts'),
     path('transactions/recommendations/', TransactionViewSet.as_view({'get': 'recommendations'}), name='transaction-recommendations'),
     path('transactions/savings_opportunities/<int:category_id>', TransactionViewSet.as_view({'get': 'savings_opportunities'}), name='transaction-savings_opportunities'),

@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Security settings
 SECRET_KEY = 'your_secret_key_here'
 DEBUG = True
-ALLOWED_HOSTS = ['127.0.0.1', 'yourdomain.com', 'testserver']
+ALLOWED_HOSTS = ['127.0.0.1', 'yourdomain.com', 'testserver', 'localhost']
 
 # Application definition
 INSTALLED_APPS = [
@@ -34,7 +34,8 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'tempus_dominus',
     'django_filters',
-    'django_extensions'
+    'django_extensions',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -45,6 +46,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'finance_tracker.urls'
@@ -109,6 +111,10 @@ REST_FRAMEWORK = {
 }
 
 # JWT settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=7),
+}
 JWT_AUTH = {
     'JWT_SECRET_KEY': SECRET_KEY,
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
@@ -154,6 +160,11 @@ else:
         }
     }
 
+# Security
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
+APPEND_SLASH = False
 
 # Constants
 CURRENCIES = {

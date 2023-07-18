@@ -43,6 +43,9 @@ from transactions.tasks import prepare_transactions_chunks
 from celery import current_task
 from celery.result import AsyncResult
 from finance_tracker.celery import app
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny
 
 User = get_user_model()
 
@@ -480,6 +483,19 @@ class SavingGoalViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def login(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        user = authenticate(username=username, password=password)
+        
+        if user:
+            refresh = RefreshToken.for_user(user)
+            return Response({'access_token': str(refresh.access_token)})
+        else:
+            return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=True, methods=['get'])
     def profile(self, request, pk=None):

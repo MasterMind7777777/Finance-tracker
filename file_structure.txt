@@ -17,7 +17,20 @@
 ┃ ┃ ┣ 📜apps.py
 ┃ ┃ ┣ 📜forms.py
 ┃ ┃ ┣ 📜models.py
+┃ ┃ ┣ 📜tasks.py
 ┃ ┃ ┣ 📜tests.py
+┃ ┃ ┣ 📜urls.py
+┃ ┃ ┣ 📜utils.py
+┃ ┃ ┗ 📜views.py
+┃ ┣ 📂api_v1
+┃ ┃ ┣ 📂migrations
+┃ ┃ ┣ 📂tests
+┃ ┃ ┣ 📜__init__.py
+┃ ┃ ┣ 📜admin.py
+┃ ┃ ┣ 📜apps.py
+┃ ┃ ┣ 📜filters.py
+┃ ┃ ┣ 📜models.py
+┃ ┃ ┣ 📜serializers.py
 ┃ ┃ ┣ 📜urls.py
 ┃ ┃ ┗ 📜views.py
 ┃ ┣ 📂budgets
@@ -29,14 +42,23 @@
 ┃ ┃ ┃ ┗ 📂budgets
 ┃ ┃ ┃   ┗ 📜overview.html
 ┃ ┃ ┣ 📂tests
-┃ ┃ ┃ ┗ 📜test_budgets_views.py
+┃ ┃ ┃ ┗ 📜test_budgets.py
 ┃ ┃ ┣ 📜__init__.py
 ┃ ┃ ┣ 📜admin.py
 ┃ ┃ ┣ 📜apps.py
 ┃ ┃ ┣ 📜forms.py
 ┃ ┃ ┣ 📜models.py
-┃ ┃ ┣ 📜tests.py
+┃ ┃ ┣ 📜tasks.py
 ┃ ┃ ┣ 📜urls.py
+┃ ┃ ┗ 📜views.py
+┃ ┣ 📂capital
+┃ ┃ ┣ 📂migrations
+┃ ┃ ┣ 📂tests
+┃ ┃ ┃ ┗ 📜test_capital.py
+┃ ┃ ┣ 📜__init__.py
+┃ ┃ ┣ 📜admin.py
+┃ ┃ ┣ 📜apps.py
+┃ ┃ ┣ 📜models.py
 ┃ ┃ ┗ 📜views.py
 ┃ ┣ 📂core
 ┃ ┃ ┣ 📂migrations
@@ -50,17 +72,18 @@
 ┃ ┃ ┣ 📜admin.py
 ┃ ┃ ┣ 📜apps.py
 ┃ ┃ ┣ 📜models.py
-┃ ┃ ┣ 📜tests.py
 ┃ ┃ ┣ 📜urls.py
 ┃ ┃ ┗ 📜views.py
 ┃ ┣ 📂finance_tracker
+┃ ┃ ┣ 📂nltk
 ┃ ┃ ┣ 📜__init__.py
 ┃ ┃ ┣ 📜asgi.py
+┃ ┃ ┣ 📜celery.py
 ┃ ┃ ┣ 📜settings.py
 ┃ ┃ ┣ 📜urls.py
 ┃ ┃ ┗ 📜wsgi.py
 ┃ ┣ 📂media
-┃ ┃ ┗ 📂images
+┃ ┣ 📂nltk
 ┃ ┣ 📂static
 ┃ ┃ ┣ 📂admin
 ┃ ┃ ┃ ┣ 📂css
@@ -116,6 +139,7 @@
 ┃ ┃ ┣ 📜error.html
 ┃ ┃ ┣ 📜footer.html
 ┃ ┃ ┗ 📜header.html
+┃ ┣ 📂test_file_cache
 ┃ ┣ 📂transactions
 ┃ ┃ ┣ 📂migrations
 ┃ ┃ ┣ 📂static
@@ -134,12 +158,14 @@
 ┃ ┃ ┃   ┣ 📜transaction_list.html
 ┃ ┃ ┃   ┗ 📜transaction_table.html
 ┃ ┃ ┣ 📂tests
-┃ ┃ ┃ ┗ 📜test_transactions_views.py
+┃ ┃ ┃ ┣ 📜test_transactions.csv
+┃ ┃ ┃ ┗ 📜test_transactions.py
 ┃ ┃ ┣ 📜__init__.py
 ┃ ┃ ┣ 📜admin.py
 ┃ ┃ ┣ 📜apps.py
 ┃ ┃ ┣ 📜forms.py
 ┃ ┃ ┣ 📜models.py
+┃ ┃ ┣ 📜tasks.py
 ┃ ┃ ┣ 📜urls.py
 ┃ ┃ ┣ 📜utils.py
 ┃ ┃ ┗ 📜views.py
@@ -154,7 +180,7 @@
 ┃ ┃ ┃   ┣ 📜login.html
 ┃ ┃ ┃   ┗ 📜signup.html
 ┃ ┃ ┣ 📂tests
-┃ ┃ ┃ ┗ 📜test_users_views.py
+┃ ┃ ┃ ┗ 📜test_users.py
 ┃ ┃ ┣ 📜__init__.py
 ┃ ┃ ┣ 📜admin.py
 ┃ ┃ ┣ 📜apps.py
@@ -164,6 +190,7 @@
 ┃ ┃ ┗ 📜views.py
 ┃ ┣ 📜manage.py
 ┃ ┗ 📜pytest.ini
+┣ 📂frontend
 ┣ 📂project_team_managment
 ┃ ┣ 📂representation
 ┃ ┃ ┣ 📂detailed
@@ -182,5 +209,7 @@
 ┃ ┗ 📜workers.txt
 ┣ 📂venv
 ┣ 📜.gitignore
+┣ 📜file_structure.txt
 ┣ 📜LICENSE
-┗ 📜README.md
+┣ 📜README.md
+┗ 📜requirements.txt
