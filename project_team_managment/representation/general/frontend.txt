@@ -1,7 +1,39 @@
-/login - alows user to log in
-/ - home page does nothing for now
-/users - lists all users
-/transactions - list
-/transactions/:id - detail + delete
-/transactions/add - add
-/transactions/update/:id - update
+# App Routes
+
+## Login/Logout Routes
+
+- `/login`
+- `/logout`
+
+## List Routes
+
+Display lists of all instances of a particular entity with add form:
+
+- `/users` (no add form)
+- `/transactions`
+- `/budgets`
+- `/categories`
+
+## Detail Routes
+
+Display detailed information about a specific instance of an entity:
+
+- `/transactions/:id`
+- `/budgets/:id`
+- `/categories/:id`
+
+## Add/Create Routes
+
+Present forms for adding or creating new instances of an entity:
+
+- `/transactions/add`
+- `/categories/add`
+- `/budgets/create`
+
+## Update/Edit Routes
+
+Present forms for updating existing instances of an entity:
+
+- `/transactions/update/:id`
+- `/budgets/update/:id`
+- `/categories/:id/edit`
