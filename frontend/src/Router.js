@@ -1,7 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
+
+// Common
 import Home from './components/Common/Home';
+import Navbar from './components/Common/Navbar';
 // User
 import UserList from './components/User/UserList';
 import Login from './components/User/Login';
@@ -24,6 +27,7 @@ import UpdateCategory from './components/Category/UpdateCategory';
 function AppRouter() {
   return (
     <Router>
+      <Navbar />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
