@@ -1,29 +1,11 @@
-import instance from './index.js';
-import AuthService from '../services/authService';
+import { authenticatedRequest } from './index.js';
 
-export const getUserList = async () => {
-    try {
-      const token = AuthService.getCurrentUser()?.access_token;
-      if (token) {
-        const response = await instance.get('/users/', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        console.log(response.data);
-        return response.data;
-      }
-      throw new Error('No access token available');
-    } catch (error) {
-      throw error;
-    }
-  };
-
-export const getUserDetail = (id) => instance.get(`/users/${id}/`);
-export const uploadProfilePic = (data) => instance.post(`/users/upload_profile_pic/`, data);
-export const acceptUser = (id) => instance.post(`/users/${id}/accept/`);
-export const declineUser = (id) => instance.post(`/users/${id}/decline/`);
-export const getUserProfile = (id) => instance.get(`/users/${id}/profile/`);
-export const getReceivedFriendRequests = (id) => instance.get(`/users/${id}/received_friend_requests/`);
-export const getSentFriendRequests = (id) => instance.get(`/users/${id}/sent_friend_requests/`);
-export const getSocialMediaAccounts = (id) => instance.get(`/users/${id}/social_media_accounts/`);
+export const getUserList = () => authenticatedRequest('get', '/users/');
+export const getUserDetail = (id) => authenticatedRequest('get', `/users/${id}/`);
+export const uploadProfilePic = (data) => authenticatedRequest('post', `/users/upload_profile_pic/`, data);
+export const acceptUser = (id) => authenticatedRequest('post', `/users/${id}/accept/`);
+export const declineUser = (id) => authenticatedRequest('post', `/users/${id}/decline/`);
+export const getUserProfile = (id) => authenticatedRequest('get', `/users/${id}/profile/`);
+export const getReceivedFriendRequests = (id) => authenticatedRequest('get', `/users/${id}/received_friend_requests/`);
+export const getSentFriendRequests = (id) => authenticatedRequest('get', `/users/${id}/sent_friend_requests/`);
+export const getSocialMediaAccounts = (id) => authenticatedRequest('get', `/users/${id}/social_media_accounts/`);

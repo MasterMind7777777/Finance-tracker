@@ -52,6 +52,20 @@ User = get_user_model()
 class CategoryBudgetViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
+    def list(self, request):
+        budgets = CategoryBudget.objects.filter(user=request.user)
+        serializer = CategoryBudgetSerializer(budgets, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, pk=None):
+        try:
+            budget = CategoryBudget.objects.get(pk=pk, user=request.user)
+        except CategoryBudget.DoesNotExist:
+            return Response({'error': 'Budget not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = CategoryBudgetSerializer(budget, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def create(self, request):
         serializer = CategoryBudgetSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
@@ -131,6 +145,10 @@ class CategoryViewSet(viewsets.ModelViewSet, CreateModelMixin):
     def create(self, request, *args, **kwargs):
         request.data['user'] = request.user.id
         return super().create(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        request.data['user'] = request.user.id
+        return super().update(request, *args, **kwargs)
     
     @action(detail=True, methods=['post'])
     def compare_spending(self, request, pk=None):

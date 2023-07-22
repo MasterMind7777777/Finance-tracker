@@ -1,3 +1,7 @@
 /login - alows user to log in
 / - home page does nothing for now
 /users - lists all users
+/transactions - list
+/transactions/:id - detail + delete
+/transactions/add - add
+/transactions/update/:id - update

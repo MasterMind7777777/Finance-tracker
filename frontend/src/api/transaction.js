@@ -1,12 +1,15 @@
-import instance from './index.js';
+import { authenticatedRequest } from './index.js';
 
-export const getTransactionRecommendations = () => instance.get(`/transactions/recommendations/`);
-export const getSavingsOpportunities = (categoryId) => instance.get(`/transactions/savings_opportunities/${categoryId}`);
-export const assignCategory = (transactionId, data) => instance.post(`/transactions/${transactionId}/assign_category`, data);
-export const acceptTransactionSplit = (id) => instance.post(`/transaction_splits/${id}/accept/`);
-export const declineTransactionSplit = (id) => instance.post(`/transaction_splits/${id}/decline/`);
-export const getTransactionList = () => instance.get(`/transactions/`);
-export const getTransactionDetail = (id) => instance.get(`/transactions/${id}/`);
-export const bulkUploadTransactions = (data) => instance.post(`/transactions/bulk_upload/`, data);
-export const forecastExpenses = () => instance.get(`/transactions/forecast_expenses/`);
-export const splitTransaction = (id, data) => instance.post(`/transactions/${id}/split_transaction/`, data);
+export const getTransactionRecommendations = () => authenticatedRequest('get', '/transactions/recommendations/');
+export const getSavingsOpportunities = (categoryId) => authenticatedRequest('get', `/transactions/savings_opportunities/${categoryId}`);
+export const assignCategory = (transactionId, data) => authenticatedRequest('post', `/transactions/${transactionId}/assign_category`, data);
+export const acceptTransactionSplit = (id) => authenticatedRequest('post', `/transaction_splits/${id}/accept/`);
+export const declineTransactionSplit = (id) => authenticatedRequest('post', `/transaction_splits/${id}/decline/`);
+export const getTransactionList = () => authenticatedRequest('get', '/transactions/');
+export const createTransaction = (data) => authenticatedRequest('post', '/transactions/', data);
+export const getTransactionDetail = (id) => authenticatedRequest('get', `/transactions/${id}/`);
+export const deleteTransaction = (id) => authenticatedRequest('Delete', `/transactions/${id}/`);
+export const updateTransaction = (id, data) => authenticatedRequest('put', `/transactions/${id}/`, data);
+export const bulkUploadTransactions = (data) => authenticatedRequest('post', `/transactions/bulk_upload/`, data);
+export const forecastExpenses = () => authenticatedRequest('get', '/transactions/forecast_expenses/');
+export const splitTransaction = (id, data) => authenticatedRequest('post', `/transactions/${id}/split_transaction/`, data);
