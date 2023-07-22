@@ -8,6 +8,7 @@ import Navbar from './components/Common/Navbar';
 // User
 import UserList from './components/User/UserList';
 import Login from './components/User/Login';
+import Logout from './components/User/Logout';
 // Transaction
 import TransactionList from './components/Transaction/TransactionList';
 import TransactionDetail from './components/Transaction/TransactionDetail';
@@ -30,6 +31,7 @@ function AppRouter() {
       <Navbar />
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/logout" element={<ProtectedRoute><Logout /></ProtectedRoute>} />
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/users" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute><TransactionList /></ProtectedRoute>} />
