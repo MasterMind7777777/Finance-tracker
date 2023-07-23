@@ -42,3 +42,4 @@ Present forms for updating existing instances of an entity:
 
 - `transactions/recommendations` (recommend transactions)
 - `/transactions/bulk-upload` (upload transactions from csv)
+- `/transactions/forecast-expenses` (forecast expenses based on current spending)
