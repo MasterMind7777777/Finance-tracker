@@ -16,6 +16,7 @@ import UpdateTransaction from './components/Transaction/UpdateTransaction';
 import TransactionListWithAdd from './components/Transaction/TransactionListWithAdd';
 // Transaction Custom
 import RecommendationComponent from './components/Transaction/RecommendationComponent';
+import TransactionBulkUpload from './components/Transaction/TransactionBulkUpload';
 // Budget CRUD
 import BudgetListWithAdd from './components/Budget/BudgetListWithAdd';
 import BudgetDetail from './components/Budget/BudgetDetail';
@@ -44,6 +45,7 @@ function AppRouter() {
         <Route path="/transactions/update/:id" element={<ProtectedRoute><UpdateTransaction /></ProtectedRoute>} />
         {/* Transaction Custom */}
         <Route path="transactions/recommendations" element={<ProtectedRoute><RecommendationComponent numRecommendations={5} /></ProtectedRoute>} />
+        <Route path="/transactions/bulk-upload" element={<ProtectedRoute><TransactionBulkUpload /></ProtectedRoute>} />
         {/* Budget CRUD */}
         <Route path="/budgets" element={<ProtectedRoute><BudgetListWithAdd /></ProtectedRoute>} />
         <Route path="/budgets/:id" element={<ProtectedRoute><BudgetDetail /></ProtectedRoute>} />

@@ -10,6 +10,18 @@ export const createTransaction = (data) => authenticatedRequest('post', '/transa
 export const getTransactionDetail = (id) => authenticatedRequest('get', `/transactions/${id}/`);
 export const deleteTransaction = (id) => authenticatedRequest('Delete', `/transactions/${id}/`);
 export const updateTransaction = (id, data) => authenticatedRequest('put', `/transactions/${id}/`, data);
-export const bulkUploadTransactions = (data) => authenticatedRequest('post', `/transactions/bulk_upload/`, data);
+export const bulkUploadTransactions = async (file) => {
+    const url = '/transactions/bulk_upload/';
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await authenticatedRequest('post', url, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+
+    return response;
+}
 export const forecastExpenses = () => authenticatedRequest('get', '/transactions/forecast_expenses/');
 export const splitTransaction = (id, data) => authenticatedRequest('post', `/transactions/${id}/split_transaction/`, data);

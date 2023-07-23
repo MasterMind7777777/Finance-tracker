@@ -18,7 +18,7 @@ Display lists of all instances of a particular entity with add form:
 
 Display detailed information about a specific instance of an entity:
 
-- `/transactions/:id`
+- `/transactions/:id` (+ auto assign category)
 - `/budgets/:id`
 - `/categories/:id`
 
@@ -37,3 +37,8 @@ Present forms for updating existing instances of an entity:
 - `/transactions/update/:id`
 - `/budgets/update/:id`
 - `/categories/:id/edit`
+
+## Other
+
+- `transactions/recommendations` (recommend transactions)
+- `/transactions/bulk-upload` (upload transactions from csv)

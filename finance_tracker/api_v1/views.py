@@ -232,6 +232,13 @@ class TransactionViewSet(viewsets.ModelViewSet):
     def bulk_upload(self, request):
         file = request.FILES.get('file')
         user_id = request.user.id
+        cache_key = f'bulk_upload_status_{user_id}'
+        task_id = cache.get(cache_key)
+        if task_id:
+            task_result = AsyncResult(task_id)
+            if task_result.ready():
+                cache.delete(cache_key)
+                return JsonResponse(task_result.result)
         if file and user_id:
             # Convert file content to string
             file_content = file.read().decode('utf-8')

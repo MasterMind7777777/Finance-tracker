@@ -435,7 +435,7 @@ def process_transactions_chunk(transactions):
         Transaction.objects.bulk_create(transactions)
         return {'status': 'Complete'}
     except Exception as e:
-        return {'status': f'Error: {e}'}
+        return {'status': 'Error', 'message': f'Error: {e}'}
 
 
 @shared_task
@@ -478,24 +478,21 @@ def prepare_transactions_chunks(file_content, user_id):
 
         # Perform the comparison
         if set(categories_exist) != category_ids:
-            return {'message': 'Invalid category IDs.'}
+            return {'status': 'Error', 'message': 'Invalid category IDs.'}
 
         chord(chunks)(finalize_transactions_upload.s(user_id))
 
     except Exception as e:
         # Handle the exception here
-        print({'message': f'Error occurred: {str(e)}'})
-        return {'message': f'Error occurred: {str(e)}'}
+        print({'status': 'Error', 'message': f'Error occurred: {str(e)}'})
+        return {'status': 'Error', 'message': f'Error occurred: {str(e)}'}
 
-    return {'message': 'No file uploaded.'}
+    return {'status': 'Error', 'message': 'No file uploaded.'}
 
 
-@shared_task
-def finalize_transactions_upload(result, user):
+@shared_task(bind=True)
+def finalize_transactions_upload(self, result, user_id):
+    task_id = self.request.id
     # Fetch the updated transactions from the database
-    updated_transactions = Transaction.objects.filter(user=user)
-
-    if updated_transactions.exists():
-        return {'message': 'Transactions uploaded successfully.'}
-    else:
-        return {'message': 'Failed to create transactions.'}
+    cache.set(f'bulk_upload_status_{user_id}', task_id)
+    return {'status': 'Complete', 'message': 'Transactions uploaded successfully.'}

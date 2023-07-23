@@ -165,6 +165,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
 ]
 APPEND_SLASH = False
+if DEBUG:
+    DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
 
 # Constants
 CURRENCIES = {

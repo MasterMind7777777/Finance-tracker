@@ -30,7 +30,7 @@ CategoryViewSet: CRUD operations +
 TransactionViewSet: CRUD operations +
   recommendations: Suggests transactions to the user based on their most frequently used category.
   assign_category: Uses keywords in a transaction's description and name to categorize the transaction automatically. [celery]
-  bulk_upload: Allow users to upload many transactions at once from csv
+  bulk_upload: Allow users to upload many transactions at once from csv [celery]
   split_transaction: Splits a transaction among multiple users and returns the split details. Split in chuncks of 100. [celery]
   forecast_expenses: Estimates a user's monthly expenses based on average daily spend. [celery]
 TransactionSplitViewSet: Allows users to accept or decline transaction splits

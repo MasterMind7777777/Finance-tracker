@@ -3,7 +3,7 @@ import { getTransactionRecommendations } from '../../api/transaction';
 
 const RecommendationComponent = ({ numRecommendations }) => {
   const [recommendations, setRecommendations] = useState([]);
-  const [mostUsedCategory, setMostUsedCategory] = useState(null); // FIXME
+  const [mostUsedCategory, setMostUsedCategory] = useState(null); // FIXME name insed of id
 
   useEffect(() => {
     getTransactionRecommendations(numRecommendations)
