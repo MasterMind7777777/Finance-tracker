@@ -3,12 +3,11 @@ import { getTransactionRecommendations } from '../../api/transaction';
 
 const RecommendationComponent = ({ numRecommendations }) => {
   const [recommendations, setRecommendations] = useState([]);
-  const [mostUsedCategory, setMostUsedCategory] = useState(null);
+  const [mostUsedCategory, setMostUsedCategory] = useState(null); // FIXME
 
   useEffect(() => {
     getTransactionRecommendations(numRecommendations)
       .then(response => {
-        console.log(response);
         if (response) {
           setRecommendations(response.recommendations);
           setMostUsedCategory(response.most_used_category);

@@ -29,11 +29,16 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = '__all__'
 
-
 class TransactionSerializer(serializers.ModelSerializer):
+    category_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Transaction
         fields = '__all__'
+        extra_fields = ['category_name']
+
+    def get_category_name(self, obj):
+        return obj.category.name if obj.category else None  # check if category is not None before accessing its name
 
 class FinancialHealthSerializer(serializers.ModelSerializer):
     advice = serializers.SerializerMethodField()

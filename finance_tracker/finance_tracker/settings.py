@@ -135,10 +135,10 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 # Celary
 if DEBUG:
     TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
-    CELERY_TASK_ALWAYS_EAGER=True
+    CELERY_TASK_ALWAYS_EAGER = True
     CELERY_BROKER_URL = 'memory://localhost/'
     CELERY_RESULT_BACKEND = 'cache+memory://localhost/'
-
+    CELERY_TASK_STORE_EAGER_RESULT = True
 else:
     CELERY_BROKER_URL = 'redis://localhost:6379'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379'

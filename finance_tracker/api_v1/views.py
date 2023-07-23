@@ -341,9 +341,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
         transaction_id = kwargs.get('transaction_id')
         user_id = request.user.pk
 
-        categorize_transaction(transaction_id, user_id)
+        responce = categorize_transaction(transaction_id, user_id)
 
-        return Response({'message': 'Transaction category assigned successfully'})
+        return Response(responce)
 
 
 class TransactionSplitViewSet(viewsets.ViewSet):

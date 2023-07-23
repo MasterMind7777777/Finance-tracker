@@ -52,7 +52,6 @@ def forecast_expenses(user_id):
 def categorize_transaction(transaction_id, user_id):
     cache_key = f"categorize_transaction_task_{transaction_id}_{user_id}"
     task_id = cache.get(cache_key)
-
     if not task_id:
         # Initiate the task and store its ID and status in the cache
         task = categorize_transaction_task.delay(transaction_id, user_id)
