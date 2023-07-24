@@ -74,8 +74,20 @@ class FriendRequest(models.Model):
     def accept(self):
         self.accepted = True
         self.save()
-        # Optionally, you can establish a friendship or perform additional actions here
+        Friend.objects.create(user1=self.from_user, user2=self.to_user)
+        Friend.objects.create(user1=self.to_user, user2=self.from_user)
 
     def decline(self):
         self.delete()
         # Optionally, you can perform additional actions here
+
+
+class Friend(models.Model):
+    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friends')
+    user2 = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['user1', 'user2']
+
+    def __str__(self):
+        return f'{self.user1.username} and {self.user2.username} are friends'

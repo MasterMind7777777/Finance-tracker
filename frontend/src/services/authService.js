@@ -8,8 +8,10 @@ class AuthService {
       username,
       password
     });
+    console.log(response);
     if (response.data.access_token) {
       localStorage.setItem("user", JSON.stringify(response.data));
+      localStorage.setItem("user_id", JSON.stringify(response.data.user_id));
       return true; // Login successful
     }
     
@@ -18,6 +20,10 @@ class AuthService {
 
   logout() {
     localStorage.removeItem("user");
+  }
+
+  getCurrentUserId() {
+    return JSON.parse(localStorage.getItem('user_id'));
   }
 
   getCurrentUser() {

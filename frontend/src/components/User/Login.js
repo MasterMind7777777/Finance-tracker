@@ -19,9 +19,13 @@ const Login = () => {
     try {
       const success = await AuthService.login(username, password);
       if (success) {
-        // Redirect to a different page
-        setUser(success);
-        navigate("/");
+        // Set the user in the context
+        const currentUser = AuthService.getCurrentUser();
+        console.log(currentUser);
+        setUser(currentUser);
+  
+        // Navigate to the dashboard
+        navigate('/');
       }
     } catch (error) {
       const resMessage =

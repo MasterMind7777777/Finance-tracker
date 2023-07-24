@@ -518,7 +518,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         if user:
             refresh = RefreshToken.for_user(user)
-            return Response({'access_token': str(refresh.access_token)})
+            return Response({'access_token': str(refresh.access_token), 'user_id': user.id})
         else:
             return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -557,6 +557,13 @@ class UserViewSet(viewsets.ModelViewSet):
         # If it's a GET request, retrieve existing social media accounts
         accounts = user.socialmediaaccount.all()
         serializer = SocialMediaAccountSerializer(accounts, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def friends(self, request, pk=None):
+        user = self.get_object()
+        friends = [friend.user2 for friend in user.friends.all()]
+        serializer = UserSerializer(friends, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])

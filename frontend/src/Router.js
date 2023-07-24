@@ -9,6 +9,8 @@ import Navbar from './components/Common/Navbar';
 import UserList from './components/User/UserList';
 import Login from './components/User/Login';
 import Logout from './components/User/Logout';
+// Friends
+import FriendDashboard from './components/Friends/FriendDashboard';
 // Transaction CRUD
 import TransactionDetail from './components/Transaction/TransactionDetail';
 import AddTransaction from './components/Transaction/AddTransaction';
@@ -38,7 +40,8 @@ function AppRouter() {
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<ProtectedRoute><Logout /></ProtectedRoute>} />
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/users" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
+        {/* Friends */}
+        <Route path="/friends" element={<ProtectedRoute><FriendDashboard /></ProtectedRoute>} />
         {/* Transaction CRUD */}
         <Route path="/transactions" element={<ProtectedRoute><TransactionListWithAdd /></ProtectedRoute>} />
         <Route path="/transactions/:id" element={<ProtectedRoute><TransactionDetail /></ProtectedRoute>} />

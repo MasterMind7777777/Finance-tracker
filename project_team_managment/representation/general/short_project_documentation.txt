@@ -51,4 +51,4 @@ Analytics App: Manages analytics with StickyNoteContent, StickyNote, Board, and 
 Capital App: Enables collaborative saving goals tracking using the versatile SavingGoal model.
 Budgets App: Uses CategoryBudget model for budget management. Multiple users can share budget.
 Transactions App: Handles transactions with difrent currencies with Category, Transaction, RecurringTransaction models.
-Users App: Manages user profiles and social media integration with User, UserProfile, SocialMediaAccount, PushNotification, FriendRequest.
+Users App: Manages user profiles and social media integration with User, UserProfile, SocialMediaAccount, PushNotification, FriendRequest, Friend.

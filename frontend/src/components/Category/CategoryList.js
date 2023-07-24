@@ -9,7 +9,6 @@ export const CategoryList = () => {
         const fetchCategories = async () => {
             try {
                 const response = await getCategoryList();
-                console.log(response);
                 setCategories(response);
             } catch (error) {
                 console.error(error);
