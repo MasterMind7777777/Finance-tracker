@@ -9,8 +9,9 @@ const FriendRequestList = ({user}) => {
   const fetchRequests = async () => {
     const received = await getReceivedFriendRequests(user.id);
     const sent = await getSentFriendRequests(user.id);
-    setReceivedRequests(received);
-    setSentRequests(sent);
+    // Filter out completed requests
+    setReceivedRequests(received.filter(request => !request.accepted));
+    setSentRequests(sent.filter(request => !request.accepted));
   }
 
   useEffect(() => {

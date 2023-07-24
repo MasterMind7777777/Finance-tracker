@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import authService from '../../services/authService';
+import { sendFriendRequest } from '../../api/users';
+
 
 const FriendRequestForm = () => {
   const [userId, setUserId] = useState('');
@@ -8,9 +9,7 @@ const FriendRequestForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // You may need to create this function in your services
-    // depending on your existing codebase
-    await authService.sendFriendRequest(userId);
+    await sendFriendRequest(userId);
 
     setUserId('');
   };

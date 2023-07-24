@@ -7,8 +7,7 @@ const FriendList = ({user}) => {
   const fetchFriends = async () => {
     const result = await getFriendsList(user.id);
     // Filter out only the accepted requests where the current user is the 'to_user'
-    const friends = result.filter(req => req.accepted && req.to_user === user.id).map(req => req.from_user);
-    setFriends(friends);
+    setFriends(result);
   }
 
   useEffect(() => {

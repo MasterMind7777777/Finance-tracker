@@ -559,6 +559,21 @@ class UserViewSet(viewsets.ModelViewSet):
         accounts = user.socialmediaaccount.all()
         serializer = SocialMediaAccountSerializer(accounts, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def send_friend_request(self, request, pk=None):
+        to_user = self.get_object()  # The user to whom the friend request is being sent
+        from_user = request.user  # The user sending the friend request
+
+        # Check if a friend request already exists
+        if FriendRequest.objects.filter(from_user=from_user, to_user=to_user).exists():
+            return Response({'detail': 'Friend request already sent.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a new friend request
+        friend_request = FriendRequest.objects.create(from_user=from_user, to_user=to_user)
+        serializer = FriendRequestSerializer(friend_request)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     @action(detail=True, methods=['get'])
     def friends(self, request, pk=None):
