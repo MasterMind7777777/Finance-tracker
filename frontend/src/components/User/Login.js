@@ -21,7 +21,6 @@ const Login = () => {
       if (success) {
         // Set the user in the context
         const currentUser = AuthService.getCurrentUser();
-        console.log(currentUser);
         setUser(currentUser);
   
         // Navigate to the dashboard

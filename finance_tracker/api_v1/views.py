@@ -518,7 +518,8 @@ class UserViewSet(viewsets.ModelViewSet):
         
         if user:
             refresh = RefreshToken.for_user(user)
-            return Response({'access_token': str(refresh.access_token), 'user_id': user.id})
+            serialised_user = self.serializer_class(user).data
+            return Response({'access_token': str(refresh.access_token), 'user': serialised_user})
         else:
             return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
 

@@ -9,8 +9,8 @@ const FriendRequestList = ({user}) => {
   const fetchRequests = async () => {
     const received = await getReceivedFriendRequests(user.id);
     const sent = await getSentFriendRequests(user.id);
-    setReceivedRequests(received.data);
-    setSentRequests(sent.data);
+    setReceivedRequests(received);
+    setSentRequests(sent);
   }
 
   useEffect(() => {
