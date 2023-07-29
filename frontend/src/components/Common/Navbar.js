@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import AuthContext from '../../context/AuthContext';
+import Dropdown from './Dropdown';
 import '../../styles/Common/Navbar.css';
 
 const Navbar = () => {
@@ -13,16 +14,27 @@ const Navbar = () => {
           <Link to="/" className="navbar-link">Home</Link>
         </li>
         <li className="navbar-item">
-          <Link to={`/friends`} className="navbar-link">Friends</Link>
+          <Dropdown route="/friends" title="Friends">
+            {/* Add more links here */}
+          </Dropdown>
         </li>
         <li className="navbar-item">
-          <Link to="/transactions" className="navbar-link">Transactions</Link>
+          <Dropdown route="/transactions" title="Transactions">
+            <Link to="/transactions/splits">Splits</Link>
+            <Link to="/transactions/splits">Splits</Link>
+            <Link to="/transactions/splits">Splits</Link>
+            {/* Add more links here */}
+          </Dropdown>
         </li>
         <li className="navbar-item">
-          <Link to="/budgets" className="navbar-link">Budgets</Link>
+          <Dropdown route="/budgets" title="Budgets">
+            {/* Add more links here */}
+          </Dropdown>
         </li>
         <li className="navbar-item">
-          <Link to="/categories" className="navbar-link">Categories</Link>
+          <Dropdown route="/categories" title="Categories">
+            {/* Add more links here */}
+          </Dropdown>
         </li>
         {user ? (
           <li className="navbar-item">
@@ -33,7 +45,6 @@ const Navbar = () => {
             <Link to="/login" className="navbar-link">Login</Link>
           </li>
         )}
-        {/* You can add more navigation links here */}
       </ul>
     </nav>
   );
