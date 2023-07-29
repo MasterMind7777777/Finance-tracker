@@ -116,10 +116,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 class TransactionSplitSerializer(serializers.ModelSerializer):
     amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    transaction_title = serializers.CharField(source='transaction.title', read_only=True)
 
     class Meta:
         model = TransactionSplit
-        fields = ['id', 'requester', 'requestee', 'transaction', 'amount', 'status']
+        fields = ['id', 'requester', 'requestee', 'transaction', 'amount', 'status', 'transaction_title']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

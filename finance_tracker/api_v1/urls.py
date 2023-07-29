@@ -19,6 +19,7 @@ router.register(r'transactions', TransactionViewSet, basename='transaction')
 router.register(r'saving_goals', SavingGoalViewSet, basename='savinggoal')
 
 
+
 urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
@@ -28,6 +29,7 @@ urlpatterns = [
     path('transactions/<int:transaction_id>/assign_category', TransactionViewSet.as_view({'post': 'assign_category'}), name='transaction-assign_category'),
     path('transaction_splits/<int:pk>/accept/', TransactionSplitViewSet.as_view({'put': 'accept'}), name='transaction_split-accept'),
     path('transaction_splits/<int:pk>/decline/', TransactionSplitViewSet.as_view({'put': 'decline'}), name='transaction_split-decline'),
+    path('transaction_splits/', TransactionSplitViewSet.as_view({'get': 'list'}), name='transaction_split-list'),
     path('financial-health/', FinancialHealthView.as_view(), name='financial-health'),
     # other paths...
 ]

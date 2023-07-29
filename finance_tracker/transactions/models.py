@@ -74,6 +74,3 @@ class TransactionSplit(models.Model):
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(choices=REQUEST_STATUS_CHOICES, default='pending', max_length=10)
-
-    class Meta:
-        unique_together = ['requester', 'requestee', 'transaction']

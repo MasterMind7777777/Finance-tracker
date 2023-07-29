@@ -9,7 +9,7 @@ from rest_framework import viewsets, status, exceptions, parsers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Sum
+from django.db.models import Q
 from budgets.models import CategoryBudget, CustomBudgetAlert
 from analytics.utils import check_financial_health
 from transactions.utils import forecast_expenses
@@ -355,7 +355,12 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
 class TransactionSplitViewSet(viewsets.ViewSet):
     queryset = TransactionSplit.objects.all()
-    allowed_methods = ['put']
+    allowed_methods = ['put', 'get']
+
+    def list(self, request):
+        queryset = TransactionSplit.objects.filter(Q(requester=request.user) | Q(requestee=request.user))
+        serializer = TransactionSplitSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['put'])
     def accept(self, request, pk=None):

@@ -20,6 +20,8 @@ import TransactionListWithAdd from './components/Transaction/TransactionListWith
 import RecommendationComponent from './components/Transaction/RecommendationComponent';
 import TransactionBulkUpload from './components/Transaction/TransactionBulkUpload';
 import ForecastExpenses from './components/Transaction/ForecastExpenses';
+import SplitTransactionForm from './components/Transaction/SplitTransactionForm';
+import SplitTransactionList from './components/Transaction/SplitTransactionList';
 // Budget CRUD
 import BudgetListWithAdd from './components/Budget/BudgetListWithAdd';
 import BudgetDetail from './components/Budget/BudgetDetail';
@@ -51,6 +53,8 @@ function AppRouter() {
         <Route path="transactions/recommendations" element={<ProtectedRoute><RecommendationComponent numRecommendations={5} /></ProtectedRoute>} />
         <Route path="/transactions/bulk-upload" element={<ProtectedRoute><TransactionBulkUpload /></ProtectedRoute>} />
         <Route path="/transactions/forecast-expenses" element={<ProtectedRoute><ForecastExpenses /></ProtectedRoute>} />
+        <Route path="/transactions/split/:id" element={<ProtectedRoute><SplitTransactionForm /></ProtectedRoute>} />
+        <Route path="/transactions/splits/" element={<ProtectedRoute><SplitTransactionList /></ProtectedRoute>} />
         {/* Budget CRUD */}
         <Route path="/budgets" element={<ProtectedRoute><BudgetListWithAdd /></ProtectedRoute>} />
         <Route path="/budgets/:id" element={<ProtectedRoute><BudgetDetail /></ProtectedRoute>} />
