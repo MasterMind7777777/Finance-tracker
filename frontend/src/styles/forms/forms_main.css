@@ -1,36 +1,54 @@
-/* Parent CSS for all forms */
+/* Base form styling */
 .form {
-  padding: 15px;
-  border: 1px solid #e1e1e1;
-  border-radius: 5px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.form-input {
   width: 100%;
-  padding: 8px;
+  max-width: 500px; /* or any desired max-width */
+  margin: 0 auto; /* centering if it's lesser than its container width */
+  padding: 20px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  background-color: #fff;
 }
 
+/* Adding some spacing between form groups for clarity */
+.form-group {
+  margin-bottom: 20px;
+}
+
+/* Label styling */
+.form-label {
+  display: block;
+  margin-bottom: 10px;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Common input and textarea styling */
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: border-color 0.3s;
+}
+
+.form-input:focus {
+  border-color: #007BFF; /* can be replaced with desired focus color */
+  outline: none;
+}
+
+/* Button styling */
 .form-button {
-  padding: 10px 15px;
-  background-color: #007bff;
+  padding: 10px 20px;
+  background-color: #007BFF; /* choose a color scheme you desire */
   color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s;
 }
 
 .form-button:hover {
-  background-color: #0056b3;
+  background-color: #0056b3; /* darker shade for hover */
 }

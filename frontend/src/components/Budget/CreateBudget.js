@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { createBudget } from '../../api/budget';
-import '../../styles/forms/forms_main.css';
-import '../../styles/forms/budget_form.css';
+import FormComponent from '../Common/forms/FormComponent.js';
 
 const CreateBudget = () => {
   const [budgetLimit, setBudgetLimit] = useState(0);
@@ -20,27 +19,34 @@ const CreateBudget = () => {
   };
 
   return (
-    <form className="create-budget-form" onSubmit={handleSubmit}>
-      <input
-        className="form-input"
-        type="number"
-        placeholder="Budget Limit"
-        value={budgetLimit}
-        onChange={(e) => setBudgetLimit(e.target.value)}
-        required
-      />
-      <input
-        className="form-input"
-        type="text"
-        placeholder="Category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        required
-      />
-      <button className="form-button" type="submit">
-        Create Budget
-      </button>
-    </form>
+    <FormComponent
+      formClassName="create-budget-form"
+      buttonText="Create Budget"
+      onSubmit={handleSubmit}
+      fields={[
+        {
+          label: 'Budget Limit',
+          type: 'number',
+          props: {
+            placeholder: 'Budget Limit',
+            value: budgetLimit,
+            onChange: (e) => setBudgetLimit(e.target.value),
+            required: true,
+          },
+        },
+        {
+          label: 'Category',
+          type: 'text',
+          props: {
+            placeholder: 'Category',
+            value: category,
+            onChange: (e) => setCategory(e.target.value),
+            required: true,
+          },
+        },
+      ]}
+    />
   );
 };
+
 export default CreateBudget;

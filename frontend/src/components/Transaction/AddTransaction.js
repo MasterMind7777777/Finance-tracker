@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
 import { createTransaction } from '../../api/transaction';
-import '../../styles/forms/forms_main.css';
-import '../../styles/forms/add_transaction.css';
 import FormComponent from '../Common/forms/FormComponent.js';
 
 const AddTransaction = () => {
@@ -44,14 +42,17 @@ const AddTransaction = () => {
           label: 'Title',
           type: 'text',
           props: {
+            placeholder: 'Title',
             value: title,
             onChange: (e) => setTitle(e.target.value),
+            required: true,
           },
         },
         {
           label: 'Description',
           type: 'textarea',
           props: {
+            placeholder: 'Description',
             value: description,
             onChange: (e) => setDescription(e.target.value),
           },
@@ -60,8 +61,10 @@ const AddTransaction = () => {
           label: 'Amount',
           type: 'number',
           props: {
+            placeholder: 'Amount',
             value: amount,
             onChange: (e) => setAmount(e.target.value),
+            required: true,
           },
         },
         // ... add more fields if needed

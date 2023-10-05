@@ -1,3 +1,7 @@
+import React from 'react'; // Add this if you're using React version < 17 or haven't updated your ESLint config
+import '../../../styles/forms/forms_main.css';
+import PropTypes from 'prop-types'; // If you intend to use PropTypes
+
 export default function FormComponent({
   fields,
   formClassName,
@@ -40,3 +44,11 @@ export default function FormComponent({
     </form>
   );
 }
+
+// If you're using PropTypes, add this:
+FormComponent.propTypes = {
+  fields: PropTypes.arrayOf(PropTypes.object).isRequired,
+  formClassName: PropTypes.string.isRequired,
+  buttonText: PropTypes.string.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+};
