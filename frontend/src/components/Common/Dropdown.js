@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 const Dropdown = ({ route, title, children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,9 +18,22 @@ const Dropdown = ({ route, title, children }) => {
       <Link to={route} className="navbar-link">
         {title}
       </Link>
-      {isOpen && <div className="dropdown-menu">{React.Children.map(children, child => React.cloneElement(child, { className: 'dropdown-link' }))}</div>}
+      {isOpen && (
+        <div className="dropdown-menu">
+          {React.Children.map(children, (child) =>
+            React.cloneElement(child, { className: 'dropdown-link' }),
+          )}
+        </div>
+      )}
     </div>
   );
+};
+
+// Define the prop types
+Dropdown.propTypes = {
+  route: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
 };
 
 export default Dropdown;

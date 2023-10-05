@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getBudgetDetail, updateBudget } from '../../api/budget';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
-const UpdateBudget = ({ match }) => {
+const UpdateBudget = () => {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState(0);
   const [category, setCategory] = useState('');
@@ -33,7 +33,13 @@ const UpdateBudget = ({ match }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <input type="number" placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} required />
+      <input
+        type="number"
+        placeholder="Amount"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        required
+      />
       <button type="submit">Update Budget</button>
     </form>
   );

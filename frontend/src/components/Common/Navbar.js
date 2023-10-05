@@ -11,7 +11,9 @@ const Navbar = () => {
     <nav className="navbar">
       <ul className="navbar-list">
         <li className="navbar-item">
-          <Link to="/" className="navbar-link">Home</Link>
+          <Link to="/" className="navbar-link">
+            Home
+          </Link>
         </li>
         <li className="navbar-item">
           <Dropdown route="/friends" title="Friends">
@@ -38,11 +40,15 @@ const Navbar = () => {
         </li>
         {user ? (
           <li className="navbar-item">
-            <Link to="/logout" className="navbar-link">Logout</Link>
+            <Link to="/logout" className="navbar-link">
+              Logout
+            </Link>
           </li>
         ) : (
           <li className="navbar-item">
-            <Link to="/login" className="navbar-link">Login</Link>
+            <Link to="/login" className="navbar-link">
+              Login
+            </Link>
           </li>
         )}
       </ul>

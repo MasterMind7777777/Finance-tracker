@@ -10,15 +10,15 @@ const BudgetList = () => {
     const token = AuthService.getCurrentUser()?.access_token;
     if (token) {
       getBudgetList(token)
-        .then(data => setBudgets(data))
-        .catch(err => console.error(err));
+        .then((data) => setBudgets(data))
+        .catch((err) => console.error(err));
     }
   }, []);
 
   return (
     <div>
       <h1>Budget List</h1>
-      {budgets.map(budget => (
+      {budgets.map((budget) => (
         <div key={budget.id}>
           <Link to={`/budgets/${budget.id}`}>{budget.category}</Link>
           <p>{budget.budget_limit}</p>

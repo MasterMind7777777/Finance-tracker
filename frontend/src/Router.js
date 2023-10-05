@@ -6,7 +6,6 @@ import ProtectedRoute from './ProtectedRoute';
 import Home from './components/Common/Home';
 import Navbar from './components/Common/Navbar';
 // User
-import UserList from './components/User/UserList';
 import Login from './components/User/Login';
 import Logout from './components/User/Logout';
 // Friends
@@ -40,31 +39,171 @@ function AppRouter() {
       <Routes>
         {/* User */}
         <Route path="/login" element={<Login />} />
-        <Route path="/logout" element={<ProtectedRoute><Logout /></ProtectedRoute>} />
-        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route
+          path="/logout"
+          element={
+            <ProtectedRoute>
+              <Logout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
         {/* Friends */}
-        <Route path="/friends" element={<ProtectedRoute><FriendDashboard /></ProtectedRoute>} />
+        <Route
+          path="/friends"
+          element={
+            <ProtectedRoute>
+              <FriendDashboard />
+            </ProtectedRoute>
+          }
+        />
         {/* Transaction CRUD */}
-        <Route path="/transactions" element={<ProtectedRoute><TransactionListWithAdd /></ProtectedRoute>} />
-        <Route path="/transactions/:id" element={<ProtectedRoute><TransactionDetail /></ProtectedRoute>} />
-        <Route path="/transactions/add" element={<ProtectedRoute><AddTransaction /></ProtectedRoute>} />
-        <Route path="/transactions/update/:id" element={<ProtectedRoute><UpdateTransaction /></ProtectedRoute>} />
+        <Route
+          path="/transactions"
+          element={
+            <ProtectedRoute>
+              <TransactionListWithAdd />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/:id"
+          element={
+            <ProtectedRoute>
+              <TransactionDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/add"
+          element={
+            <ProtectedRoute>
+              <AddTransaction />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/update/:id"
+          element={
+            <ProtectedRoute>
+              <UpdateTransaction />
+            </ProtectedRoute>
+          }
+        />
         {/* Transaction Custom */}
-        <Route path="transactions/recommendations" element={<ProtectedRoute><RecommendationComponent numRecommendations={5} /></ProtectedRoute>} />
-        <Route path="/transactions/bulk-upload" element={<ProtectedRoute><TransactionBulkUpload /></ProtectedRoute>} />
-        <Route path="/transactions/forecast-expenses" element={<ProtectedRoute><ForecastExpenses /></ProtectedRoute>} />
-        <Route path="/transactions/split/:id" element={<ProtectedRoute><SplitTransactionForm /></ProtectedRoute>} />
-        <Route path="/transactions/splits/" element={<ProtectedRoute><SplitTransactionList /></ProtectedRoute>} />
+        <Route
+          path="transactions/recommendations"
+          element={
+            <ProtectedRoute>
+              <RecommendationComponent numRecommendations={5} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/bulk-upload"
+          element={
+            <ProtectedRoute>
+              <TransactionBulkUpload />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/forecast-expenses"
+          element={
+            <ProtectedRoute>
+              <ForecastExpenses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/split/:id"
+          element={
+            <ProtectedRoute>
+              <SplitTransactionForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/splits/"
+          element={
+            <ProtectedRoute>
+              <SplitTransactionList />
+            </ProtectedRoute>
+          }
+        />
         {/* Budget CRUD */}
-        <Route path="/budgets" element={<ProtectedRoute><BudgetListWithAdd /></ProtectedRoute>} />
-        <Route path="/budgets/:id" element={<ProtectedRoute><BudgetDetail /></ProtectedRoute>} />
-        <Route path="/budgets/create" element={<ProtectedRoute><CreateBudget /></ProtectedRoute>} />
-        <Route path="/budgets/update/:id" element={<ProtectedRoute><UpdateBudget /></ProtectedRoute>} />
+        <Route
+          path="/budgets"
+          element={
+            <ProtectedRoute>
+              <BudgetListWithAdd />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/budgets/:id"
+          element={
+            <ProtectedRoute>
+              <BudgetDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/budgets/create"
+          element={
+            <ProtectedRoute>
+              <CreateBudget />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/budgets/update/:id"
+          element={
+            <ProtectedRoute>
+              <UpdateBudget />
+            </ProtectedRoute>
+          }
+        />
         {/* Category CRUD */}
-        <Route path="/categories" element={<ProtectedRoute><CategoryListWithAdd /></ProtectedRoute>} />
-        <Route path="/categories/:id" element={<ProtectedRoute><CategoryDetail /></ProtectedRoute>} />
-        <Route path="/categories/add" element={<ProtectedRoute><AddCategory /></ProtectedRoute>} />
-        <Route path="/categories/:id/edit" element={<ProtectedRoute><UpdateCategory /></ProtectedRoute>} />
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <CategoryListWithAdd />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories/:id"
+          element={
+            <ProtectedRoute>
+              <CategoryDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories/add"
+          element={
+            <ProtectedRoute>
+              <AddCategory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories/:id/edit"
+          element={
+            <ProtectedRoute>
+              <UpdateCategory />
+            </ProtectedRoute>
+          }
+        />
         {/* Add more protected routes as needed */}
       </Routes>
     </Router>

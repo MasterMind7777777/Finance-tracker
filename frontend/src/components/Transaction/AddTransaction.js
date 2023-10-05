@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
 import { createTransaction } from '../../api/transaction';
+import '../../styles/forms/forms_main.css';
+import '../../styles/forms/add_transaction.css';
+import FormComponent from '../Common/forms/FormComponent.js';
 
 const AddTransaction = () => {
   const navigate = useNavigate(); // Get the navigate function
@@ -9,7 +12,7 @@ const AddTransaction = () => {
   const [amount, setAmount] = useState(0); // Default value of 0 for amount, change it as needed
   // Add states for other transaction fields
 
-  const handleSubmit = async event => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const transaction = {
@@ -32,22 +35,38 @@ const AddTransaction = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Title:
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} />
-      </label>
-      <label>
-        Description:
-        <textarea value={description} onChange={e => setDescription(e.target.value)} />
-      </label>
-      <label>
-        Amount:
-        <input type="number" value={amount} onChange={e => setAmount(e.target.value)} />
-      </label>
-      {/* Fields for other transaction properties */}
-      <button type="submit">Add Transaction</button>
-    </form>
+    <FormComponent
+      formClassName="add-transaction-form"
+      buttonText="Add Transaction"
+      onSubmit={handleSubmit}
+      fields={[
+        {
+          label: 'Title',
+          type: 'text',
+          props: {
+            value: title,
+            onChange: (e) => setTitle(e.target.value),
+          },
+        },
+        {
+          label: 'Description',
+          type: 'textarea',
+          props: {
+            value: description,
+            onChange: (e) => setDescription(e.target.value),
+          },
+        },
+        {
+          label: 'Amount',
+          type: 'number',
+          props: {
+            value: amount,
+            onChange: (e) => setAmount(e.target.value),
+          },
+        },
+        // ... add more fields if needed
+      ]}
+    />
   );
 };
 
