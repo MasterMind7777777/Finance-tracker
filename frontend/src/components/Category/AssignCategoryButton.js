@@ -55,7 +55,7 @@ const AssignCategoryButton = ({ transactionId, refreshTransaction }) => {
 };
 
 AssignCategoryButton.propTypes = {
-  transactionId: PropTypes.string.isRequired,
+  transactionId: PropTypes.number.isRequired,
   refreshTransaction: PropTypes.func.isRequired,
 };
 

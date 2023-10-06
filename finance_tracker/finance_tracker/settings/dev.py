@@ -1,0 +1,4 @@
+from .base import *
+DEBUG = True
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
