@@ -207,6 +207,35 @@ class CategoryViewSet(viewsets.ModelViewSet, CreateModelMixin):
         logger.info(f"Updating category for user {request.user.username}")
         return super().update(request, *args, **kwargs)
 
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            logger.info(
+                f"Attempting to delete category {instance.id} for user {request.user.username}"
+            )
+            self.perform_destroy(instance)
+            logger.info(
+                f"Successfully deleted category {instance.id} for user {request.user.username}"
+            )
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        except ValidationError as e:
+            logger.warning(
+                f"ValidationError while deleting category for user {request.user.username}: {str(e)}"
+            )
+            return Response(
+                {"error": str(e)}, status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        except Exception as e:
+            logger.error(
+                f"Error while deleting category for user {request.user.username}: {str(e)}"
+            )
+            return Response(
+                {"error": "An error occurred processing the request"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
     @action(detail=True, methods=["post"])
     def compare_spending(self, request, pk=None):
         user_id = request.user.id

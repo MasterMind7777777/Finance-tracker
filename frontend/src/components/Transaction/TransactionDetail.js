@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getTransactionDetail, deleteTransaction } from '../../api/transaction';
 import AssignCategoryButton from '../Category/AssignCategoryButton';
 import PropTypes from 'prop-types';
+import SplitTransactionForm from './SplitTransactionForm';
 // TODO Add update button
 
 const TransactionDetailParent = () => {
@@ -28,6 +29,7 @@ const TransactionDetailParent = () => {
         transactionId={transaction.id}
         refreshTransaction={refreshTransaction}
       />
+      <SplitTransactionForm transactionId={transaction.id} />
     </div>
   ) : (
     <p>Loading...</p>
