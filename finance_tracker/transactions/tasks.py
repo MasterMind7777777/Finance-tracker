@@ -1,4 +1,5 @@
 import csv
+import os
 from decimal import Decimal
 import io
 from celery import chain, chord, group, shared_task
@@ -16,18 +17,29 @@ from celery.result import AsyncResult
 import nltk
 import logging
 
-nltk.data.path.append("C:/projects/Finance-tracker/finance_tracker/nltk")
+# Get the path to the directory containing the current script
+current_dir_path = os.path.dirname(os.path.abspath(__file__))
+
+# Build the path to the nltk data directory
+nltk_data_path = os.path.join(current_dir_path, "..", "nltk")
+
+# Convert the path to an absolute path (this step is optional but can help avoid potential issues)
+nltk_data_path = os.path.abspath(nltk_data_path)
+
+# Append this path to the nltk data path
+nltk.data.path.append(nltk_data_path)
+
 try:
     from nltk.corpus import stopwords
     from nltk.tokenize import word_tokenize
 except:
     nltk.download(
         "stopwords",
-        download_dir="C:/projects/Finance-tracker/finance_tracker/nltk",
+        download_dir=nltk_data_path,
     )
     nltk.download(
         "punkt",
-        download_dir="C:/projects/Finance-tracker/finance_tracker/nltk",
+        download_dir=nltk_data_path,
     )
     from nltk.corpus import stopwords
     from nltk.tokenize import word_tokenize
@@ -95,7 +107,11 @@ def compare_spending_task(user_id, friends_ids, category_id, period_days=30):
     try:
         category = Category.objects.get(pk=category_id, user=user)
     except Category.DoesNotExist:
-        logger.error("Category ID %s is not associated with user ID %s", category_id, user_id)
+        logger.error(
+            "Category ID %s is not associated with user ID %s",
+            category_id,
+            user_id,
+        )
         return {
             "status": "Error",
             "message": f"{category_id} is not one of categories of current user.",
@@ -241,10 +257,15 @@ def compare_spending_task(user_id, friends_ids, category_id, period_days=30):
 def process_friend_data_task(
     friend_id, category_name, start_date, period_days
 ):
-    friend = User.objects.get(pk=friend_id)
+    try:
+        friend = User.objects.get(pk=friend_id)
+    except User.DoesNotExist:
+        logger.error("Friend with ID %s does not exist", friend_id)
+        return {"status": "Error", "message": "Friend does not exist"}
+
     friend_categories = Category.objects.filter(user=friend)
     category_scores = {}
-    # Fetch the tasks results for each friend
+
     cache_key = f"task_ids_calculate_category_similarity_task_{friend_id}"
     task_ids = cache.get(cache_key)
 
@@ -254,12 +275,9 @@ def process_friend_data_task(
             similarity_task = calculate_category_similarity_task.delay(
                 friend_category.name, friend_category.pk, category_name
             )
-            # Store the task IDs
             task_ids.append(similarity_task.id)
-        cache.set(
-            f"task_ids_calculate_category_similarity_task_{friend_id}",
-            task_ids,
-        )
+
+        cache.set(cache_key, task_ids)
 
     calculate_category_results = []
     for task_id in task_ids:
@@ -268,10 +286,7 @@ def process_friend_data_task(
             return {"status": "Pending"}
         else:
             result_status = check_calculate_category_similarity_task(task_id)
-            result_status = check_calculate_category_similarity_task(
-                task_id
-            )  # FIXME
-            print(result_status)
+            logger.debug("Task ID %s result: %s", task_id, result_status)
             if result_status["status"] == "Pending":
                 return {"status": "Pending"}
             else:
@@ -284,21 +299,17 @@ def process_friend_data_task(
             "score"
         )
 
-    # Sort the category scores in descending order
     sorted_scores = sorted(
         category_scores.items(), key=lambda x: x[1], reverse=True
     )
     chosen_category = sorted_scores[0][0]
 
-    # Calculate each friend's spending in the best matching category during the period
     friend_transactions = Transaction.objects.filter(
         user=friend, category=chosen_category, date__gte=start_date
     )
     friend_total = sum(
         transaction.amount for transaction in friend_transactions
     )
-
-    # Calculate the number of transactions and average transaction amount for each friend
     friend_num_transactions = len(friend_transactions)
     friend_avg_transaction = (
         friend_total / friend_num_transactions if friend_transactions else 0
@@ -377,10 +388,11 @@ def check_calculate_category_similarity_task(task_id):
 
 @shared_task(bind=True)
 def categorize_transaction_task(self, transaction_id, user_id):
-    # Define a cache key for this task
-
-    # The task hasn't been initiated yet, proceed with the task
-    uncategorized_transaction = Transaction.objects.get(id=transaction_id)
+    try:
+        uncategorized_transaction = Transaction.objects.get(id=transaction_id)
+    except Transaction.DoesNotExist:
+        logger.error("Transaction with ID %s does not exist", transaction_id)
+        return {"status": "Error", "message": "Transaction does not exist"}
 
     text = (
         uncategorized_transaction.title
@@ -392,7 +404,11 @@ def categorize_transaction_task(self, transaction_id, user_id):
     task_chain = find_matching_category_task.s(text, user_id, transaction_id)
     task_chain_result = task_chain.apply_async()
 
-    # Save the task data to the cache
+    logger.info(
+        "Initiated task to categorize transaction %s for user %s",
+        transaction_id,
+        user_id,
+    )
     return {"status": "Pending"}
 
 
@@ -421,33 +437,31 @@ def find_matching_category_task(self, text, user_id, transaction_id):
     cache_key = f"categorize_transaction_task_{transaction_id}_{user_id}"
     cache.set(cache_key, task_chain_result.id)
 
+    logger.info(
+        "Initiated task chain to find matching category for transaction %s",
+        transaction_id,
+    )
     return {"status": "Pending", "job_id": task_chain_result.id}
 
 
 @shared_task
 def extract_keywords_task(text, category_id=None):
     cleaned_text = re.sub(r"[^a-zA-Z0-9\s]", "", text.lower())
-
-    # Tokenize the cleaned text into individual words
     words = word_tokenize(cleaned_text)
-
-    # Remove common stop words
     stop_words = set(stopwords.words("english"))
     keywords = [word for word in words if word not in stop_words]
+    logger.info("Extracted keywords from text: %s", text)
     return {"keywords": keywords, "category_id": category_id}
 
 
 @shared_task(bind=True)
-def calculate_similarity_task(
-    self,
-    keywords1,
-    keywords2,
-):
+def calculate_similarity_task(self, keywords1, keywords2):
     set1 = set(keywords1)
     set2 = set(keywords2)
     intersection = set1.intersection(set2)
     union = set1.union(set2)
     similarity = len(intersection) / len(union)
+    logger.info("Calculated similarity between two keyword sets.")
     return similarity
 
 
@@ -464,30 +478,54 @@ def calculate_similarity_task_chain(self, results, original_text_keywords):
         union = set1.union(set2)
         similarity = len(intersection) / len(union)
         similarities[category_id] = similarity
-    output = {
-        "status": "Complete",
-        "result": similarities,
-    }
-    return output
+    logger.info("Processed similarities for multiple keyword sets.")
+    return {"status": "Complete", "result": similarities}
 
 
 @shared_task
 def on_all_tasks_done(results, transaction_id):
-    # Find the result with the highest similarity
-    highest_similarity_result = max(
-        results["result"].items(), key=lambda x: x[1]
+    # Check if the results dictionary contains the expected "result" key
+    if not results.get("result"):
+        logger.warning(
+            f"No results found for transaction {transaction_id}. results: {results}"
+        )
+        return {
+            "status": "Incomplete",
+            "best_matching_category": None,
+        }
+
+    try:
+        # Find the highest similarity result by sorting the items by value
+        highest_similarity_result = max(
+            results["result"].items(), key=lambda x: x[1]
+        )
+    except (TypeError, ValueError) as e:
+        # Log an error if max() fails due to a TypeError or ValueError
+        logger.error(
+            f"Error determining best matching category for transaction {transaction_id}. "
+            f"Exception: {e}, results: {results}"
+        )
+        return {
+            "status": "Error",
+            "best_matching_category": None,
+            "error": str(e),
+        }
+
+    # Log the determination of the best matching category
+    logger.info(
+        f"Determined best matching category for transaction {transaction_id}. "
+        f"Category: {highest_similarity_result[0]}"
     )
-    output = {
+
+    return {
         "status": "Complete",
         "best_matching_category": highest_similarity_result[0],
     }
-    return output
 
 
 @shared_task
 def apply_recurring_transactions_task(frequency):
     current_date = timezone.now().date()
-
     latest_transaction_dates = (
         Transaction.objects.filter(
             recurring_transaction__isnull=False,
@@ -530,15 +568,19 @@ def apply_recurring_transactions_task(frequency):
             )
 
     Transaction.objects.bulk_create(transactions_to_create)
+    logger.info("Applied recurring transactions with frequency %s.", frequency)
 
 
 @shared_task
 def process_transactions_chunk(transactions):
-    # Process a chunk of transactions
     try:
         Transaction.objects.bulk_create(transactions)
+        logger.info(
+            f"Successfully processed a chunk of {len(transactions)} transactions."
+        )
         return {"status": "Complete"}
     except Exception as e:
+        logger.error(f"Error while processing a chunk of transactions: {e}")
         return {"status": "Error", "message": f"Error: {e}"}
 
 
@@ -549,7 +591,6 @@ def prepare_transactions_chunks(file_content, user_id):
         reader = csv.DictReader(file_wrapper)
         transactions = []
         category_ids = set()
-
         chunks = []
         chunk_size = 100
 
@@ -571,26 +612,24 @@ def prepare_transactions_chunks(file_content, user_id):
                 chunks.append(process_transactions_chunk.si(transactions))
                 transactions = []
 
-        # Last chunk
         if transactions:
             chunks.append(process_transactions_chunk.si(transactions))
 
         categories_exist = Category.objects.filter(
             id__in=category_ids
         ).values_list("id", flat=True)
-
-        # Convert category_ids to a set of integers
         category_ids = set(map(int, category_ids))
 
-        # Perform the comparison
         if set(categories_exist) != category_ids:
+            logger.error("Invalid category IDs provided in the transactions.")
             return {"status": "Error", "message": "Invalid category IDs."}
 
         chord(chunks)(finalize_transactions_upload.s(user_id))
 
     except Exception as e:
-        # Handle the exception here
-        print({"status": "Error", "message": f"Error occurred: {str(e)}"})
+        logger.error(
+            f"Error occurred while preparing transactions chunks: {e}"
+        )
         return {"status": "Error", "message": f"Error occurred: {str(e)}"}
 
     return {"status": "Error", "message": "No file uploaded."}
@@ -599,8 +638,8 @@ def prepare_transactions_chunks(file_content, user_id):
 @shared_task(bind=True)
 def finalize_transactions_upload(self, result, user_id):
     task_id = self.request.id
-    # Fetch the updated transactions from the database
     cache.set(f"bulk_upload_status_{user_id}", task_id)
+    logger.info(f"Transactions upload finalized for user {user_id}.")
     return {
         "status": "Complete",
         "message": "Transactions uploaded successfully.",
