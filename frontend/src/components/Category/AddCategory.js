@@ -4,8 +4,15 @@ import { createCategory } from '../../api/category';
 import FormComponent from '../Common/forms/FormComponent.js';
 
 export const CategoryCreate = () => {
+  const CATEGORY_TYPES = [
+    { value: 'expense', label: 'Expense' },
+    { value: 'income', label: 'Income' },
+    { value: 'saving', label: 'Saving' },
+    { value: 'investment', label: 'Investment' },
+  ];
+
   const [name, setName] = useState('');
-  const [type, setType] = useState('');
+  const [type, setType] = useState(CATEGORY_TYPES[0].value);
   const navigate = useNavigate();
 
   const handleSubmit = (event) => {
@@ -36,11 +43,17 @@ export const CategoryCreate = () => {
           },
           {
             label: 'Type',
-            type: 'text',
+            type: 'select',
             props: {
               value: type,
-              onChange: (e) => setType(e.target.value),
+              onChange: (e) => {
+                setType(e.target.value);
+              },
             },
+            options: CATEGORY_TYPES.map((categoryType) => ({
+              value: categoryType.value,
+              label: categoryType.label,
+            })),
           },
         ]}
       />

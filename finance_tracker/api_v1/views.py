@@ -199,13 +199,49 @@ class CategoryViewSet(viewsets.ModelViewSet, CreateModelMixin):
 
     def create(self, request, *args, **kwargs):
         request.data["user"] = request.user.id
-        logger.info(f"Creating category for user {request.user.username}")
-        return super().create(request, *args, **kwargs)
+
+        # Validation
+        if not self.is_valid_category(request.data):
+            logger.warning(
+                f"Invalid category data provided by user {request.user.username} request data: {request.data}"
+            )
+            raise ValidationError("Invalid category data")
+
+        response = super().create(request, *args, **kwargs)
+
+        if 200 <= response.status_code < 300:
+            logger.info(
+                f"Successfully created category for user {request.user.username}"
+            )
+        else:
+            logger.error(
+                f"Failed to create category for user {request.user.username}. Status code: {response.status_code}"
+            )
+
+        return response
 
     def update(self, request, *args, **kwargs):
         request.data["user"] = request.user.id
-        logger.info(f"Updating category for user {request.user.username}")
-        return super().update(request, *args, **kwargs)
+
+        # Validation
+        if not self.is_valid_category(request.data):
+            logger.warning(
+                f"Invalid category data provided by user {request.user.username} for update"
+            )
+            raise ValidationError("Invalid category data for update")
+
+        response = super().update(request, *args, **kwargs)
+
+        if 200 <= response.status_code < 300:
+            logger.info(
+                f"Successfully updated category for user {request.user.username}"
+            )
+        else:
+            logger.error(
+                f"Failed to update category for user {request.user.username}. Status code: {response.status_code}"
+            )
+
+        return response
 
     def destroy(self, request, *args, **kwargs):
         try:
@@ -218,7 +254,7 @@ class CategoryViewSet(viewsets.ModelViewSet, CreateModelMixin):
                 f"Successfully deleted category {instance.id} for user {request.user.username}"
             )
             return Response(status=status.HTTP_204_NO_CONTENT)
-        
+
         except ValidationError as e:
             logger.warning(
                 f"ValidationError while deleting category for user {request.user.username}: {str(e)}"
@@ -226,7 +262,7 @@ class CategoryViewSet(viewsets.ModelViewSet, CreateModelMixin):
             return Response(
                 {"error": str(e)}, status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         except Exception as e:
             logger.error(
                 f"Error while deleting category for user {request.user.username}: {str(e)}"
@@ -274,6 +310,14 @@ class CategoryViewSet(viewsets.ModelViewSet, CreateModelMixin):
                 {"error": "An error occurred processing the request"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    def is_valid_category(self, data):
+        # Implement your validation logic here.
+        # For example, check if the category name or type is not empty.
+        # Return True if the data is valid, otherwise return False.
+        if not data.get("name") or not data.get("type"):
+            return False
+        return True
 
 
 class TransactionViewSet(viewsets.ModelViewSet):

@@ -1,14 +1,35 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createTransaction } from '../../api/transaction';
+import { getCategoryList } from '../../api/category'; // Import getCategoryList
 import FormComponent from '../Common/forms/FormComponent.js';
 
 const AddTransaction = () => {
-  const navigate = useNavigate(); // Get the navigate function
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState(0); // Default value of 0 for amount, change it as needed
-  // Add states for other transaction fields
+  const [amount, setAmount] = useState(0);
+  const [category, setCategory] = useState(''); // State for category
+  const [categoryOptions, setCategoryOptions] = useState([]); // State to store category options
+
+  // Fetch category options when the component mounts
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await getCategoryList();
+        if (Array.isArray(response)) {
+          // Check if response.data is an array
+          setCategoryOptions(response);
+        } else {
+          console.error('Response data is not an array'); // Debug log
+        }
+      } catch (error) {
+        console.error('Error fetching categories: ', error);
+      }
+    }
+
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -16,20 +37,18 @@ const AddTransaction = () => {
     const transaction = {
       title,
       description,
-      amount, // Include the amount field in the transaction object
-      // Other fields...
+      amount,
+      category, // Include the selected category in the transaction object
     };
 
-    // Assuming createTransaction returns the newly created transaction with an ID
     const newTransaction = await createTransaction(transaction);
 
     setTitle('');
     setDescription('');
-    setAmount(0); // Reset the amount field after form submission
-    // Clear other fields...
+    setAmount(0);
+    setCategory(''); // Reset the category field after form submission
 
-    // Navigate to the detail page of the newly created transaction
-    navigate(`/transactions/${newTransaction.id}`); // Replace 'id' with the actual property containing the ID
+    navigate(`/transactions/${newTransaction.id}`);
   };
 
   return (
@@ -66,6 +85,23 @@ const AddTransaction = () => {
             onChange: (e) => setAmount(e.target.value),
             required: true,
           },
+        },
+        {
+          label: 'Category', // Add a field for the category dropdown
+          type: 'select',
+          props: {
+            value: category,
+            onChange: (e) => setCategory(e.target.value),
+            required: true,
+          },
+          options: categoryOptions
+            ? categoryOptions.map((categoryOption) => {
+                return {
+                  value: categoryOption.id,
+                  label: categoryOption.name,
+                };
+              })
+            : [], // Default to an empty array if categoryOptions is not available
         },
         // ... add more fields if needed
       ]}
