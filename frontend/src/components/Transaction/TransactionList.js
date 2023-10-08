@@ -1,33 +1,49 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { getTransactionList } from '../../api/transaction';
 import AuthService from '../../services/authService';
+import ListRenderer from '../Common/lists/listBase'; // make sure the path is correct
 
 const TransactionList = () => {
   const [transactions, setTransactions] = useState([]);
+  const [transactionTitles, setTransactionTitles] = useState([]);
 
   useEffect(() => {
     const token = AuthService.getCurrentUser()?.access_token;
     if (token) {
       getTransactionList(token)
-        .then(data => setTransactions(data))
-        .catch(err => console.error(err));
+        .then((data) => {
+          setTransactions(data);
+          // Generate titles for each transaction, this could be anything based on your needs
+          console.log(transactions);
+          const titles = data.map(
+            (transaction) => `Transaction: ${transaction.title}`,
+          );
+          setTransactionTitles(titles);
+        })
+        .catch((err) => console.error(err));
     }
   }, []);
 
+  const contentConfig = {
+    title: 'title',
+    paragraphs: [
+      { key: 'amount', label: 'Amount' },
+      { key: 'date', label: 'Date' },
+      { key: 'category', label: 'Category' },
+    ], // Now an array of objects
+    links: [
+      { link: 'id', linkPrefix: '/transactions/', linkText: 'View Details' },
+    ],
+  };
+
   return (
-    <div>
-      <h1>Transaction List</h1>
-      {transactions.map(transaction => (
-        <div key={transaction.id}>
-          <h2>{transaction.title}</h2>
-          <p>{transaction.amount}</p>
-          <p>{transaction.date}</p>
-          <p>{transaction.category}</p>
-          <Link to={`/transactions/${transaction.id}`}>View Details</Link>
-        </div>
-      ))}
-    </div>
+    <ListRenderer
+      items={transactions}
+      itemTitles={transactionTitles}
+      keyExtractor={(item) => item.id}
+      title="Transaction List"
+      contentConfig={contentConfig}
+    />
   );
 };
 

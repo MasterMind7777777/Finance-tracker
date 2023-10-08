@@ -1,0 +1,98 @@
+/* List Container */
+.list-container {
+  margin: 1rem;
+  padding: 1rem;
+  background-color: #e8eaf6;  /* Darker grey-blue background for contrast */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Darker shadow for contrast */
+}
+
+/* List Title */
+.list-title {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid #1565c0;  /* Dark blue for contrast */
+  padding-bottom: 0.5rem;
+  color: #212121;  /* Almost black for better contrast */
+}
+
+/* List Items Container */
+.list-items {
+  display: flex;
+  flex-direction: column;
+}
+
+/* List Item */
+.list-item {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background-color: #ffffff;  /* White background for list items */
+  border: 2px solid #9e9e9e;  /* Medium grey for better contrast */
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.list-item:hover {
+  border-color: #0d47a1;  /* Dark blue on hover for contrast */
+}
+
+/* List Item Content */
+.list-item-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* List Item Title Wrapper */
+.list-item-title-wrapper {
+  margin-bottom: 1rem;
+}
+
+/* List Item Title */
+.list-item-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #212121;  /* Almost black for better contrast */
+}
+
+/* List Item Fields */
+.list-item-fields {
+  margin-bottom: 1rem;
+}
+
+/* List Item Paragraph Wrapper */
+.list-item-paragraph-wrapper {
+  background-color: #f1f1f1;  /* Darker grey for contrast */
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+/* List Item Paragraph */
+.list-item-paragraph {
+  margin-bottom: 0.3rem;
+  font-size: 1rem;
+  color: #424242;  /* Dark grey for text for contrast */
+}
+
+/* List Item Links */
+.list-item-links {
+  margin-top: 0.5rem;
+}
+
+/* List Item Link Wrapper */
+.list-item-link-wrapper {
+  margin-top: 0.2rem;
+}
+
+/* List Item Link */
+.list-item-link {
+  color: #1565c0;  /* Dark blue for links for contrast */
+  text-decoration: none;
+}
+
+.list-item-link:hover {
+  text-decoration: underline;
+  color: #0d47a1;  /* Darker blue on hover for contrast */
+}
+
