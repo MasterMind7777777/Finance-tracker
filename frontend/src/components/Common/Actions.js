@@ -54,15 +54,13 @@ const ActionsSection = ({ actionConfigs, executeAction }) => {
             </button>
           )}
           {type === 'element' && (
-            <div id={`detail-action-form-${index}`}>
-              <Component {...props}>
-                {(elements) =>
-                  elements.map((element, elIndex) =>
-                    renderElement(element, elIndex),
-                  )
-                }
-              </Component>
-            </div>
+            <Component {...props}>
+              {(elements) =>
+                elements.map((element, elIndex) =>
+                  renderElement(element, elIndex),
+                )
+              }
+            </Component>
           )}
         </div>
       ))}

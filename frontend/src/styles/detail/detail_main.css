@@ -8,7 +8,7 @@
   align-items: center;
   background-color: var(--tertiary-background);
   color: var(--tertiary-text);
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 1.2rem, 1.4rem);
   height: 100vh;
 }
 
@@ -24,14 +24,13 @@
   flex-direction: column;
   align-items: stretch;
   transition: box-shadow 0.3s ease;
-  max-width: 800px;
+  max-width: clamp(300px, 800px, 100%);
 }
 
 .detail-card:hover {
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
   border-color: var(--primary-border-hover);
 }
-
 
 /* Title section styling */
 .title-section {
@@ -65,7 +64,7 @@
 
 .detail-title {
   color: var(--title-text-color);
-  font-size: 2rem;
+  font-size: clamp(1.8rem, 2rem, 2.2rem);
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -80,40 +79,40 @@
 
 /* Content section styling */
 .detail-content {
-  width: 95%;  /* Slightly reduced width for a more contained look */
+  width: clamp(85%, 95%, 100%);
   background-color: var(--secondary-background);
-  margin: 1rem auto;  /* Centers the content horizontally */
-  border-radius: 12px;  /* Increased border-radius for a softer appearance */
-  padding: 1rem;  /* Increased padding for better spacing */
-  box-shadow: 0px 2px 4px rgba(0,0,0,0.1);  /* Added box-shadow for depth */
+  margin: 1rem auto;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
 }
 
 .detail-field {
   display: flex;
   justify-content: space-between;
-  padding: 0.8rem;  /* Increased padding for better readability */
+  padding: 0.8rem;
   border-bottom: 1px solid var(--secondary-border);
-  transition: background-color 0.3s ease;  /* Transition moved from wrapper */
+  transition: background-color 0.3s ease;
 }
 
 .detail-field:hover {
-  background-color: var(--secondary-hover);  /* Added a new hover color variable */
+  background-color: var(--secondary-hover);
 }
 
 /* More defined and unique label */
 .detail-label {
   color: var(--primary-text);
-  font-weight: 700;  /* Made text slightly bolder */
+  font-weight: 700;
   text-align: right;
-  margin-right: 1.5rem;  /* Increased margin for better spacing */
+  margin-right: 1.5rem;
   flex: 1;
-  text-transform: uppercase;  /* Added text transformation for a unique look */
+  text-transform: uppercase;
 }
 
 .detail-value {
   color: var(--secondary-text);
   text-align: left;
   flex: 1;
-  font-size: 0.9rem;  /* Slightly reduced font-size for better distinction from label */
+  font-size: clamp(0.8rem, 0.9rem, 1rem);
 }
 

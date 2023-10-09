@@ -7,34 +7,34 @@
   grid-template-columns: 1fr;
   align-items: center;
   max-width: 100%;
-  margin: 2rem auto;
   background-color: var(--tertiary-background);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 4px 8px var(--box-shadow);
-  align-items: center;
+  border-radius: min(clamp(1vw, 1rem, 2vw), 2rem);
+  padding: min(clamp(1vw, 2vw, 3vw), 3rem);
+  box-shadow: 0 0.25vw 0.5vw var(--box-shadow);
   justify-items: center;
 }
 
 .detail-actions > * {
-  max-width: calc(100% - 4rem);  /* accounting for padding */
+  max-width: calc(100% - min(4vw, 4rem));
 }
 
+/* Action wrapper styling */
 .action-wrapper {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  margin: 1rem 0;
+  margin: min(1vw, 1rem) 0;
 }
 
+/* Detail action button styling */
 .detail-action {
   background-color: var(--primary-button-bg);
   color: var(--primary-button-text);
   border: none;
-  border-radius: 8px;
-  padding: 1rem 2rem;
+  border-radius: min(0.5vw, 0.5rem);
+  padding: min(1vw, 1rem) min(2vw, 2rem);
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.3s ease;
   font-weight: 600;
@@ -44,25 +44,26 @@
 
 .detail-action:hover {
   background-color: var(--primary-button-hover);
-  transform: translateY(-3px);
+  transform: translateY(-min(0.1875vw, 0.1875rem));
 }
 
+/* Action form styling */
 .detail-action-form {
   width: 100%;
   background-color: var(--secondary-background);
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px var(--box-shadow);
+  padding: min(1.5vw, 1.5rem);
+  border-radius: min(0.75vw, 0.75rem);
+  box-shadow: 0 0.25vw 0.5vw var(--box-shadow);
 }
 
 .action-button {
   background-color: var(--primary-button-bg);
   color: var(--primary-button-text);
   border: none;
-  border-radius: 6px;
-  padding: 0.8rem 1.6rem;
+  border-radius: min(0.375vw, 0.375rem);
+  padding: min(0.8vw, 0.8rem) min(1.6vw, 1.6rem);
   cursor: pointer;
-  margin: 0.7rem;
+  margin: min(0.7vw, 0.7rem);
   transition: background-color 0.3s ease;
 }
 
@@ -70,96 +71,64 @@
   background-color: var(--primary-button-hover);
 }
 
+/* Input styling */
 .action-input {
-  box-sizing: border-box;
-  padding: 0.8rem;
+  box-sizing: content-box;
+  font-size: clamp(1rem, 1.2vw, 1.5rem); /* Increase font size */
+  line-height: 1.2;
+  padding: min(0.5vw, 0.5rem) min(0.8vw, 0.8rem);
   border: 2px solid var(--primary-border);
-  border-radius: 6px;
-  margin: 0.7rem;
-  width: 95%;
+  border-radius: min(0.375vw, 0.375rem);
+  margin: min(0.7vw, 0.7rem);
+  width: calc(5rem - min(1.4vw, 1.4rem));
+  overflow: auto;
+  display: flex;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.group-wrapper {
+.action-input:focus {
+  border-color: var(--primary-border-focus);
+  box-shadow: 0 0 min(0.5vw, 0.5rem) var(--primary-border-focus);
+}
+
+/* Group wrapper and form styling */
+.group-wrapper, .action-form {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px var(--box-shadow);
+  gap: min(clamp(1vw, 1.5vw, 2vw), 2rem);
+  padding: min(1.5vw, 1.5rem);
+  border-radius: min(0.75vw, 0.75rem);
+  box-shadow: 0 0.25vw 0.5vw var(--box-shadow);
   align-items: center;
 }
 
-.action-form {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px var(--box-shadow);
-  align-items: center;
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .detail-actions {
-    padding: 1.8rem;
-  }
-  .action-wrapper,
-  .action-input,
-  .action-button,
-  .group-wrapper,
-  .action-form {
-    padding: 0.7rem;
+/* Responsive design for large screens */
+@media screen and (min-width: 1500px) {
+  .action-input {
+    font-size: calc(0.2rem + min(0.5vw, 0.5rem));
+    padding: clamp(0.5rem, 0.8vw, 1rem); /* Increase padding */
   }
 }
 
-@media (max-width: 1024px) {
-  .detail-actions {
-    padding: 1.6rem;
+/* Responsive design for small screens */
+@media screen and (max-width: 540px) {
+  .action-input, .group-wrapper, .action-form{
+    width: min(5rem, 80%);
   }
-  .action-wrapper,
-  .action-input,
-  .action-button,
-  .group-wrapper,
-  .action-form {
-    padding: 0.6rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .detail-actions {
-    padding: 1rem;
-  }
-  .action-wrapper{
-    margin: 0rem;
-    padding: 0rem;
+  .action-input {
+    font-size: calc(0.4rem + min(0.5vw, 0.5rem));
+    padding: clamp(0.5rem, 0.8vw, 1rem); /* Increase padding */
+    margin: min(0.7vw, 0.7rem);
   }
 
-  .action-input,
-  .action-button,
-  .group-wrapper,
-  .action-form {
-    margin: 0.5rem;
-    padding: 0.5rem;
+  .group-wrapper {
+    grid-template-columns: 1fr;
+    display: block;
+    margin: min(0.8vw, 0.8rem);
   }
-  .group-wrapper,
+
   .action-form {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    display: block;
   }
 }
-
-@media (max-width: 480px) {
-  .detail-actions {
-    padding: 0.8rem;
-  }
-  .action-wrapper,
-  .action-input,
-  .action-button,
-  .group-wrapper,
-  .action-form {
-    margin: 0.4rem;
-    padding: 0.4rem;
-  }
-}
-
