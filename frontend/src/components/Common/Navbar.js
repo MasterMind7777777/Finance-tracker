@@ -23,7 +23,7 @@ const Navbar = () => {
         <li className="navbar-item">
           <Dropdown route="/transactions" title="Transactions">
             <Link to="/transactions/splits">Splits</Link>
-            <Link to="/transactions/splits">Splits</Link>
+            <Link to="/transactions/bulk-upload">Import transactions</Link>
             <Link to="/transactions/splits">Splits</Link>
             {/* Add more links here */}
           </Dropdown>

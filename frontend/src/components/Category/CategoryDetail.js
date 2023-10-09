@@ -1,41 +1,57 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { DetailComponent } from '../Common/Detail/DetailBase'; // Import generalized DetailComponent
+import React from 'react';
 import {
   getCategoryDetail,
   deleteCategory as apiDeleteCategory,
 } from '../../api/category';
+import { useParams } from 'react-router-dom';
 
 export const CategoryDetail = () => {
   const { id } = useParams();
-  const [category, setCategory] = useState(null);
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    getCategoryDetail(id)
-      .then((data) => setCategory(data))
-      .catch((error) => console.error(error));
-  }, [id]);
-
-  const deleteCategory = () => {
-    apiDeleteCategory(id)
-      .then(() => {
-        navigate('/categories'); // Or whatever path you'd like to redirect to
-      })
-      .catch((error) => console.error(error));
+  const fetchDetail = async (id) => {
+    try {
+      const response = await getCategoryDetail(id);
+      return response;
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  if (!category) {
-    return <div>Loading...</div>;
-  }
+  const handleDeleteAction = async () => {
+    try {
+      await apiDeleteCategory(id);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const detailFields = [
+    { key: 'id', label: 'ID' },
+    { key: 'name', label: 'Name' },
+    { key: 'type', label: 'Type' },
+    // ... other category properties you want to display
+  ];
+
+  const actionConfigs = [
+    {
+      type: 'button',
+      Component: {
+        label: 'Delete',
+        execute: handleDeleteAction,
+        navigate: '/categories',
+      },
+    },
+    // ... additional actions
+  ];
 
   return (
-    <div>
-      <h2>Category Detail</h2>
-      <p>{category.id}</p>
-      <p>{category.name}</p>
-      <p>{category.type}</p>
-      <button onClick={deleteCategory}>Delete Category</button>
-    </div>
+    <DetailComponent
+      fetchDetail={fetchDetail}
+      detailFields={detailFields}
+      actionConfigs={actionConfigs}
+      entityTitle="Category Detail"
+    />
   );
 };
 

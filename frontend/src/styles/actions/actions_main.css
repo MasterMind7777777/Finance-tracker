@@ -113,7 +113,7 @@
 /* Responsive design for small screens */
 @media screen and (max-width: 540px) {
   .action-input, .group-wrapper, .action-form{
-    width: min(5rem, 80%);
+    width: min(15rm, 80%);
   }
   .action-input {
     font-size: calc(0.4rem + min(0.5vw, 0.5rem));

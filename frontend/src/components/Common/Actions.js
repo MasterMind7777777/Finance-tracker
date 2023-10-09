@@ -15,6 +15,33 @@ const ActionsSection = ({ actionConfigs, executeAction }) => {
         return (
           <input {...element.props} key={elIndex} className="action-input" />
         );
+      case 'status':
+        return (
+          <div key={elIndex} className="action-status">
+            {element.props.status}
+          </div>
+        );
+      case 'file':
+        return (
+          <div key={elIndex} className="file-wrapper">
+            <button
+              onClick={() => document.getElementById('file-input').click()}
+              className="file-button"
+            >
+              {element.props.label || 'Select File'}
+            </button>
+            <input
+              type={element.props.type}
+              onChange={element.props.onChange}
+              id={element.props.id}
+              className="file-input"
+              style={{ display: 'none' }} // hiding the actual input field
+            />
+            {element.props.file && (
+              <div className="file-name">{element.props.file.name}</div>
+            )}
+          </div>
+        );
       case 'group':
         return (
           <div className="group-wrapper" key={elIndex}>

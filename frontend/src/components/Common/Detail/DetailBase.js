@@ -61,10 +61,12 @@ export const DetailComponent = ({
       </div>
 
       {/* Actions Section */}
-      <ActionsSection
-        actionConfigs={actionConfigs}
-        executeAction={executeAction}
-      />
+      {actionConfigs && actionConfigs.length > 0 && (
+        <ActionsSection
+          actionConfigs={actionConfigs}
+          executeAction={executeAction}
+        />
+      )}
     </div>
   );
 };
@@ -84,5 +86,9 @@ DetailComponent.propTypes = {
       Component: PropTypes.func.isRequired,
       props: PropTypes.object,
     }),
-  ).isRequired,
+  ),
+};
+
+DetailComponent.defaultProps = {
+  actionConfigs: null,
 };

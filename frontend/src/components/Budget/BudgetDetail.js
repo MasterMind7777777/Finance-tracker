@@ -1,28 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { DetailComponent } from '../Common/Detail/DetailBase'; // Import generalized DetailComponent
+import React from 'react';
 import { getBudgetDetail } from '../../api/budget';
 
 const BudgetDetail = () => {
-  const [budget, setBudget] = useState(null);
-  const { id } = useParams();
-
-  useEffect(() => {
-    const fetchBudget = async () => {
+  const fetchDetail = async (id) => {
+    try {
       const response = await getBudgetDetail(id);
-      setBudget(response);
-    };
+      return response;
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-    fetchBudget();
-  }, [id]);
+  const detailFields = [
+    { key: 'id', label: 'ID' },
+    { key: 'category', label: 'Category' },
+    { key: 'budget_limit', label: 'Limit' },
+    // ... other budget properties you want to display
+  ];
 
-  return budget ? (
-    <div>
-      <h2>{budget.id}</h2>
-      <p>{budget.category}</p>
-      {/* Render other budget properties */}
-    </div>
-  ) : (
-    <p>Loading...</p>
+  return (
+    <DetailComponent
+      fetchDetail={fetchDetail}
+      detailFields={detailFields}
+      entityTitle="Budget Detail"
+    />
   );
 };
 
