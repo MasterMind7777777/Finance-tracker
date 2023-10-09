@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getCategoryList } from '../../api/category';
-import ListRenderer from '../Common/lists/listBase';
+import ListRenderer from '../Common/Lists/ListBase';
 
 const CategoryList = () => {
   const [categories, setCategories] = useState([]);

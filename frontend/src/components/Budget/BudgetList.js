@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import ListRenderer from '../Common/lists/listBase';
+import ListRenderer from '../Common/Lists/ListBase';
 import { getBudgetList } from '../../api/budget';
 import AuthService from '../../services/authService';
 

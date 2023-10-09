@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getTransactionDetail, deleteTransaction } from '../../api/transaction';
 import AssignCategoryButton from '../Category/AssignCategoryButton';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import SplitTransactionForm from './SplitTransactionForm';
-// TODO Add update button
+import { DetailComponent } from '../Common/Detail/DetailBase'; // Import generalized DetailComponent
 
 const TransactionDetailParent = () => {
   const [transaction, setTransaction] = useState(null);
@@ -15,60 +15,55 @@ const TransactionDetailParent = () => {
     setTransaction(response);
   };
 
+  const detailFields = [
+    { key: 'title', label: 'Transaction Title' },
+    { key: 'category_name', label: 'Category' },
+    { key: 'amount', label: 'Amount' },
+    { key: 'currency', label: 'Currency' },
+    { key: 'description', label: 'Description' },
+  ];
+
+  const handleDeleteAction = async () => {
+    await deleteTransaction(id);
+  };
+
+  const actionConfigs = [
+    {
+      type: 'button',
+      Component: {
+        label: 'Delete',
+        execute: handleDeleteAction,
+        navigate: '/transactions',
+      },
+    },
+    {
+      type: 'element',
+      Component: AssignCategoryButton,
+      props: { transactionId: id, refreshTransaction },
+    },
+    {
+      type: 'element',
+      Component: SplitTransactionForm,
+      props: { transactionId: id },
+    },
+  ];
+
   useEffect(() => {
     refreshTransaction();
   }, [id]);
 
   return transaction ? (
     <div>
-      <TransactionDetail
-        transaction={transaction}
-        refreshTransaction={refreshTransaction}
+      <DetailComponent
+        entityTitle="Transaction information"
+        fetchDetail={getTransactionDetail}
+        detailFields={detailFields}
+        actionConfigs={actionConfigs}
       />
-      <AssignCategoryButton
-        transactionId={transaction.id}
-        refreshTransaction={refreshTransaction}
-      />
-      <SplitTransactionForm transactionId={transaction.id} />
     </div>
   ) : (
     <p>Loading...</p>
   );
-};
-
-const TransactionDetail = ({ transaction, refreshTransaction }) => {
-  const navigate = useNavigate();
-
-  const handleDelete = async () => {
-    await deleteTransaction(transaction.id);
-    navigate('/transactions');
-  };
-  return (
-    <div>
-      <h2>{transaction.title}</h2>
-      <p>Category: {transaction.category_name || 'None'}</p>{' '}
-      {/* display category name or 'None' */}
-      <p>
-        Amount: {transaction.amount} {transaction.currency}
-      </p>
-      <p>Description: {transaction.description}</p>
-      <button onClick={handleDelete}>Delete Transaction</button>
-      {/* Render other transaction properties */}
-    </div>
-  );
-};
-
-// Define propTypes for TransactionDetail
-TransactionDetail.propTypes = {
-  transaction: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    title: PropTypes.string.isRequired,
-    category_name: PropTypes.string,
-    amount: PropTypes.string.isRequired,
-    currency: PropTypes.string.isRequired,
-    description: PropTypes.string,
-  }).isRequired,
-  refreshTransaction: PropTypes.func.isRequired,
 };
 
 export default TransactionDetailParent;

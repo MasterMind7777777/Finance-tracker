@@ -1,19 +1,21 @@
+@import '../colours/main_colours.css';
+
 /* List Container */
 .list-container {
   margin: 1rem;
   padding: 1rem;
-  background-color: #e8eaf6;  /* Darker grey-blue background for contrast */
+  background-color: var(--secondary-background);
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Darker shadow for contrast */
+  box-shadow: 0 4px 8px var(--box-shadow);
 }
 
 /* List Title */
 .list-title {
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
-  border-bottom: 3px solid #1565c0;  /* Dark blue for contrast */
+  border-bottom: 3px solid var(--secondary-link);
   padding-bottom: 0.5rem;
-  color: #212121;  /* Almost black for better contrast */
+  color: var(--secondary-text);
 }
 
 /* List Items Container */
@@ -26,14 +28,14 @@
 .list-item {
   padding: 1rem;
   margin-bottom: 1.5rem;
-  background-color: #ffffff;  /* White background for list items */
-  border: 2px solid #9e9e9e;  /* Medium grey for better contrast */
+  background-color: var(--primary-background);
+  border: 2px solid var(--secondary-border);
   border-radius: 8px;
   transition: all 0.2s;
 }
 
 .list-item:hover {
-  border-color: #0d47a1;  /* Dark blue on hover for contrast */
+  border-color: var(--secondary-focus);
 }
 
 /* List Item Content */
@@ -52,7 +54,7 @@
   font-weight: 600;
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
-  color: #212121;  /* Almost black for better contrast */
+  color: var(--secondary-text);
 }
 
 /* List Item Fields */
@@ -62,7 +64,7 @@
 
 /* List Item Paragraph Wrapper */
 .list-item-paragraph-wrapper {
-  background-color: #f1f1f1;  /* Darker grey for contrast */
+  background-color: var(--tertiary-background);
   padding: 0.5rem;
   margin-bottom: 0.5rem;
   border-radius: 4px;
@@ -72,7 +74,7 @@
 .list-item-paragraph {
   margin-bottom: 0.3rem;
   font-size: 1rem;
-  color: #424242;  /* Dark grey for text for contrast */
+  color: var(--tertiary-text);
 }
 
 /* List Item Links */
@@ -87,12 +89,11 @@
 
 /* List Item Link */
 .list-item-link {
-  color: #1565c0;  /* Dark blue for links for contrast */
+  color: var(--secondary-link);
   text-decoration: none;
 }
 
 .list-item-link:hover {
   text-decoration: underline;
-  color: #0d47a1;  /* Darker blue on hover for contrast */
+  color: var(--secondary-focus);
 }
-

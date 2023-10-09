@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createBudget } from '../../api/budget';
 import { getCategoryList } from '../../api/category';
-import FormComponent from '../Common/forms/FormComponent.js';
+import FormComponent from '../Common/Forms/FormBase';
 
 const CreateBudget = () => {
   const navigate = useNavigate();

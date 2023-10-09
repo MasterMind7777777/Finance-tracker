@@ -1,0 +1,25 @@
+/* Define color variables */
+:root {
+  /* Primary colors */
+  --primary-background: #fff;
+  --primary-text: #333;
+  --primary-border: #ccc;
+  --primary-focus: #007BFF;
+  --primary-button-bg: #007BFF;
+  --primary-button-text: #fff;
+  --primary-button-hover: #0056b3;
+
+  /* Secondary colors */
+  --secondary-background: #e8eaf6;  /* Darker grey-blue background for contrast */
+  --secondary-border: #9e9e9e;  /* Medium grey for better contrast */
+  --secondary-text: #212121;  /* Almost black for better contrast */
+  --secondary-focus: #0d47a1;  /* Dark blue for contrast */
+  --secondary-link: #1565c0;  /* Dark blue for links */
+  
+  /* Tertiary colors */
+  --tertiary-background: #f1f1f1;  /* Darker grey for contrast */
+  --tertiary-text: #424242;  /* Dark grey for text for contrast */
+
+  /* Misc */
+  --box-shadow: rgba(0, 0, 0, 0.2);  /* Darker shadow for contrast */
+}

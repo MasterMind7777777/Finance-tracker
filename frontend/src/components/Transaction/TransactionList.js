@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getTransactionList } from '../../api/transaction';
 import AuthService from '../../services/authService';
-import ListRenderer from '../Common/lists/listBase'; // make sure the path is correct
+import ListRenderer from '../Common/Lists/ListBase';
 
 const TransactionList = () => {
   const [transactions, setTransactions] = useState([]);

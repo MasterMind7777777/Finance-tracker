@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createTransaction } from '../../api/transaction';
 import { getCategoryList } from '../../api/category'; // Import getCategoryList
-import FormComponent from '../Common/forms/FormComponent.js';
+import FormComponent from '../Common/Forms/FormBase';
 
 const AddTransaction = () => {
   const navigate = useNavigate();

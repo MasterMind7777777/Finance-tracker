@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createCategory } from '../../api/category';
-import FormComponent from '../Common/forms/FormComponent.js';
+import FormComponent from '../Common/Forms/FormBase';
 
 export const CategoryCreate = () => {
   const CATEGORY_TYPES = [
