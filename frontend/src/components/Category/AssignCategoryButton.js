@@ -2,33 +2,36 @@ import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { assignCategory } from '../../api/transaction';
 import { ActionElementType } from '../Common/constants/actionElementType';
+import { TaskStatus } from '../Common/constants/StatusCodes'; // Import your TaskStatus object
 
 const AssignCategoryButton = ({
   transactionId,
   refreshTransaction,
   children,
 }) => {
-  const [status, setStatus] = useState('NOT_STARTED');
+  const [status, setStatus] = useState(null);
   const [error, setError] = useState(null);
 
   const fetchResult = async () => {
     try {
-      setStatus('IN_PROGRESS');
+      setStatus(TaskStatus.PENDING); // Use TaskStatus.PENDING
       const response = await assignCategory(transactionId);
-      if (response.status === 'Complete') {
-        setStatus('COMPLETED');
+      if (response.status === TaskStatus.COMPLETE) {
+        // Use TaskStatus.COMPLETE
+        setStatus(TaskStatus.COMPLETE); // Use TaskStatus.COMPLETE
         refreshTransaction();
-      } else if (response.status === 'Pending') {
+      } else if (response.status === TaskStatus.PENDING) {
+        // Use TaskStatus.PENDING
         setTimeout(fetchResult, 500);
       }
     } catch (err) {
-      setStatus('FAILED');
+      setStatus(TaskStatus.ERROR); // Use TaskStatus.ERROR
       setError(err.message);
     }
   };
 
   useEffect(() => {
-    setStatus('NOT_STARTED');
+    setStatus(null); // Use TaskStatus.PENDING
     setError(null);
   }, [transactionId]);
 
@@ -41,8 +44,9 @@ const AssignCategoryButton = ({
       type: ActionElementType.BUTTON,
       props: {
         onClick: handleAssignCategory,
-        disabled: status === 'IN_PROGRESS',
-        label: status === 'IN_PROGRESS' ? 'Assigning...' : 'Assign Category',
+        disabled: status === TaskStatus.PENDING, // Use TaskStatus.PENDING
+        label:
+          status === TaskStatus.PENDING ? 'Assigning...' : 'Assign Category', // Use TaskStatus.PENDING
       },
     },
     {

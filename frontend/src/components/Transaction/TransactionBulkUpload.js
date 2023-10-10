@@ -3,6 +3,7 @@ import { bulkUploadTransactions } from '../../api/transaction';
 import { toast } from 'react-toastify';
 import ActionsSection from '../Common/Actions';
 import FileInputComponent from '../Common/Forms/FileUpload';
+import { TaskStatus } from '../Common/constants/StatusCodes';
 
 const TransactionBulkUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -14,23 +15,22 @@ const TransactionBulkUpload = () => {
     }
 
     try {
-      // Initial upload
       let response = await bulkUploadTransactions(selectedFile);
       console.log(response);
 
       if (typeof response === 'object' && response.status) {
         switch (response.status) {
-          case 'Pending':
+          case TaskStatus.PENDING:
             toast.info(
               'Upload successful, transactions are being processed...',
             );
             break;
-          case 'Error':
+          case TaskStatus.ERROR:
             toast.error(`Upload failed: ${response.message}`);
             break;
-          case 'Complete':
+          case TaskStatus.COMPLETE:
             toast.success(response.message);
-            return; // If Complete on first attempt, return
+            return;
           default:
             toast.error('Unexpected status received. Please try again.');
             break;
@@ -40,26 +40,23 @@ const TransactionBulkUpload = () => {
         return;
       }
 
-      // If not Complete, keep checking status every 5 seconds
       const intervalId = setInterval(async () => {
         response = await bulkUploadTransactions(selectedFile); // Function to check status needs to be implemented
-
         console.log(response);
-        if (response.status === 'Complete') {
+
+        if (response.status === TaskStatus.COMPLETE) {
           clearInterval(intervalId);
           toast.success(response.message);
         }
-      }, 200);
+      }, 5000); // Changed from 200ms to 5000ms for checking status every 5 seconds
     } catch (error) {
       toast.error(`An error occurred: ${error.message}`);
     }
   };
 
-  const handleFileChange = (elements) => {
-    const fileElement = elements.find((element) => element.type === 'file');
-    console.log(fileElement);
-    if (fileElement) {
-      setSelectedFile(fileElement.props.file);
+  const handleFileChange = (file) => {
+    if (file) {
+      setSelectedFile(file);
     }
   };
 
@@ -67,7 +64,7 @@ const TransactionBulkUpload = () => {
     {
       type: 'element',
       Component: FileInputComponent,
-      props: { children: handleFileChange },
+      props: { refreshFile: handleFileChange },
     },
     {
       type: 'button',

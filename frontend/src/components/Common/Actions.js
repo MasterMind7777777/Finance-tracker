@@ -26,7 +26,7 @@ const ActionsSection = ({ actionConfigs, executeAction }) => {
           <div key={elIndex} className="file-wrapper">
             <button
               onClick={() => document.getElementById('file-input').click()}
-              className="file-button"
+              className="action-button"
             >
               {element.props.label || 'Select File'}
             </button>

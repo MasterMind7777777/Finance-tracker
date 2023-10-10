@@ -5,4 +5,5 @@ export const ActionElementType = {
   INPUT: 'input',
   GROUP: 'group',
   SUBMIT: 'submit',
+  FILE: 'file',
 };

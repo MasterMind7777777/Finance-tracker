@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ActionElementType } from '../constants/actionElementType';
 import PropTypes from 'prop-types';
 
-const FileInputComponent = ({ children }) => {
+const FileInputComponent = ({ refreshFile, children }) => {
   const [status, setStatus] = useState('IDLE');
   const [error, setError] = useState(null);
   const [file, setFile] = useState(null);
@@ -13,6 +13,7 @@ const FileInputComponent = ({ children }) => {
       setStatus('SELECTED');
       setError(null);
       setFile(selectedFile);
+      refreshFile(selectedFile);
     } else {
       setError('No file selected');
       setStatus('FAILED');
