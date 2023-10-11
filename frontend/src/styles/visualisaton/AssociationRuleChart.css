@@ -1,0 +1,46 @@
+:root {
+  --main-margin: 20px;
+  --main-padding: 20px;
+  --small-margin: 10px;
+  --chart-border-color: #ccc;
+  --main-font-size: 24px;
+  --sub-font-size: 18px;
+}
+
+.chart-container {
+  margin: var(--main-margin);
+  padding: var(--main-padding);
+  border: 1px solid var(--chart-border-color);
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* optional, for a bit of depth */
+}
+
+.chart-title {
+  font-size: var(--main-font-size);
+  margin-bottom: var(--main-margin);
+}
+
+.rule-section {
+  margin-bottom: calc(2 * var(--main-margin)); /* double the main margin */
+}
+
+.rule-title {
+  font-size: var(--sub-font-size);
+  margin-bottom: var(--small-margin);
+}
+
+/* Media Query for larger screens */
+@media screen and (min-width: 1200px) {
+  .chart-container {
+    margin: calc(1.5 * var(--main-margin));
+    padding: calc(1.5 * var(--main-padding));
+  }
+
+  .chart-title {
+    font-size: calc(1.2 * var(--main-font-size));
+  }
+
+  .rule-title {
+    font-size: calc(1.2 * var(--sub-font-size));
+  }
+}
+

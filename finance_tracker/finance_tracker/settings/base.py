@@ -3,7 +3,7 @@ import os
 from .logging_config import LOGGING
 
 # Build paths inside the project
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Security settings
 SECRET_KEY = "your_secret_key_here"

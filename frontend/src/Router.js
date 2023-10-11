@@ -31,6 +31,7 @@ import CategoryListWithAdd from './components/Category/CategoryListWithAdd';
 import CategoryDetail from './components/Category/CategoryDetail';
 import AddCategory from './components/Category/AddCategory';
 import UpdateCategory from './components/Category/UpdateCategory';
+import SavingsOpportunities from './components/Analitics/SavingsOpportunities';
 
 function AppRouter() {
   return (
@@ -204,6 +205,15 @@ function AppRouter() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/categories/:id/savings_opportunities"
+          element={
+            <ProtectedRoute>
+              <SavingsOpportunities />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Add more protected routes as needed */}
       </Routes>
     </Router>

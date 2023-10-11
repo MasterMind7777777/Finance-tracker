@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
 import { sendFriendRequest } from '../../api/users';
-
 
 const FriendRequestForm = () => {
   const [userId, setUserId] = useState('');
@@ -18,7 +16,11 @@ const FriendRequestForm = () => {
     <form onSubmit={handleSubmit}>
       <label>
         User ID:
-        <input type="text" value={userId} onChange={(e) => setUserId(e.target.value)} />
+        <input
+          type="text"
+          value={userId}
+          onChange={(e) => setUserId(e.target.value)}
+        />
       </label>
       <input type="submit" value="Send Friend Request" />
     </form>

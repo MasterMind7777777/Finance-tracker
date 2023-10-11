@@ -17,7 +17,7 @@ const UpdateTransaction = ({ match }) => {
     getTransaction();
   }, [match.params.id]);
 
-  const handleSubmit = async event => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const transaction = {
@@ -33,11 +33,18 @@ const UpdateTransaction = ({ match }) => {
     <form onSubmit={handleSubmit}>
       <label>
         Title:
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} />
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
       </label>
       <label>
         Description:
-        <textarea value={description} onChange={e => setDescription(e.target.value)} />
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
       </label>
       {/* Fields for other transaction properties */}
       <button type="submit">Update Transaction</button>

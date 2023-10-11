@@ -472,10 +472,102 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     def savings_opportunities(self, request, category_id):
         logger.info("Calculating savings opportunities.")
+
+        def round_floats(val):
+            if isinstance(val, float):
+                if val == float("inf"):
+                    return "Infinity"
+                elif val == float("-inf"):
+                    return "-Infinity"
+                else:
+                    return round(val, 4)
+            return val
+
+        # Retrieve the category object based on the category ID
         category = get_object_or_404(Category, id=category_id)
         user = request.user
-        # ... [rest of the function remains unchanged]
-        return JsonResponse(opportunities, safe=False)
+
+        # Prepare data for analysis
+        category_spending = {}
+        title_transactions = {}
+
+        transactions = Transaction.objects.filter(category=category, user=user)
+
+        for transaction in transactions:
+            amount = transaction.amount
+
+            # Calculate total spending for the category
+            if category.id in category_spending:
+                category_spending[category.id] += amount
+            else:
+                category_spending[category.id] = amount
+
+            # Group transactions by title
+            title = transaction.title
+            if title in title_transactions:
+                title_transactions[title].append(True)
+            else:
+                title_transactions[title] = [True]
+
+        # Fill missing values with False
+        transaction_titles = title_transactions.keys()
+        for title in transaction_titles:
+            if len(title_transactions[title]) < len(transactions):
+                title_transactions[title].extend(
+                    [False]
+                    * (len(transactions) - len(title_transactions[title]))
+                )
+
+        # Find the selected category and its spending
+        selected_category_spending = category_spending.get(category.id, 0)
+
+        # Calculate potential savings by reducing spending in the selected category
+        potential_savings = (
+            float(selected_category_spending) * 0.1
+        )  # Assume a 10% reduction in spending
+
+        # Convert title_transactions to DataFrame
+        title_transactions_df = DataFrame.from_dict(
+            title_transactions, orient="index"
+        ).transpose()
+
+        # Perform association rule mining to discover associations between transaction titles
+        if not title_transactions_df.empty:
+            frequent_itemsets = apriori(
+                title_transactions_df, min_support=0.1, use_colnames=True
+            )
+            association_rules_df = association_rules(
+                frequent_itemsets, metric="confidence", min_threshold=0.7
+            )
+            # Convert frozensets in 'antecedents' and 'consequents' to lists
+            association_rules_df["antecedents"] = association_rules_df[
+                "antecedents"
+            ].apply(list)
+            association_rules_df["consequents"] = association_rules_df[
+                "consequents"
+            ].apply(list)
+
+            # Round all float values in the DataFrame to 4 decimal places
+            association_rules_df = association_rules_df.applymap(round_floats)
+        else:
+            # Empty DataFrame, no association rules to generate
+            frequent_itemsets = []
+            association_rules_df = DataFrame()
+
+        # Create a list of savings opportunities
+        opportunities = [
+            {
+                "category": category.name,
+                "selected_category_spending": selected_category_spending,
+                "potential_savings": round(float(potential_savings), 4),
+                "correlations": [],
+                "association_rules": association_rules_df.to_dict(
+                    orient="records"
+                ),
+            }
+        ]
+
+        return Response(opportunities)
 
     def assign_category(self, request, *args, **kwargs):
         transaction_id = kwargs.get("transaction_id")

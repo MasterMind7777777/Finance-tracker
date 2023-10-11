@@ -32,7 +32,6 @@ export const CategoryDetail = () => {
     { key: 'type', label: 'Type' },
     // ... other category properties you want to display
   ];
-
   const actionConfigs = [
     {
       type: 'button',
@@ -40,6 +39,13 @@ export const CategoryDetail = () => {
         label: 'Delete',
         execute: handleDeleteAction,
         navigate: '/categories',
+      },
+    },
+    {
+      type: 'link',
+      Component: {
+        label: 'View saving opportunities',
+        navigate: `/categories/${id}/savings_opportunities`,
       },
     },
     // ... additional actions

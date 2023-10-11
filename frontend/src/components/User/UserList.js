@@ -9,15 +9,15 @@ const UserList = () => {
     const token = AuthService.getCurrentUser()?.access_token;
     if (token) {
       getUserList(token)
-        .then(data => setUsers(data))
-        .catch(err => console.error(err));
+        .then((data) => setUsers(data))
+        .catch((err) => console.error(err));
     }
   }, []);
 
   return (
     <div>
       <h1>User List</h1>
-      {users.map(user => (
+      {users.map((user) => (
         <div key={user.id}>
           <h2>{user.username}</h2>
           <p>{user.date_of_birth}</p>

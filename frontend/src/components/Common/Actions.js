@@ -75,10 +75,19 @@ const ActionsSection = ({ actionConfigs, executeAction }) => {
             <button
               id={`detail-action-button-${index}`}
               className="detail-action"
-              onClick={() => executeAction(Component)}
+              onClick={() => executeAction && executeAction(Component)}
             >
               {Component.label}
             </button>
+          )}
+          {type === 'link' && (
+            <a
+              id={`detail-action-link-${index}`}
+              className="detail-action"
+              href={Component.navigate}
+            >
+              {Component.label}
+            </a>
           )}
           {type === 'element' && (
             <Component {...props}>
