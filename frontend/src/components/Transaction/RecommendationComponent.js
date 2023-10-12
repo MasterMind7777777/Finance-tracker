@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { getTransactionRecommendations } from '../../api/transaction';
+import { DetailComponent } from '../Common/Detail/DetailBase';
 
 const RecommendationComponent = ({ numRecommendations }) => {
   const [recommendations, setRecommendations] = useState([]);
-  const [mostUsedCategory, setMostUsedCategory] = useState(null); // FIXME name insed of id
+  const [mostUsedCategory, setMostUsedCategory] = useState(null);
 
   useEffect(() => {
     getTransactionRecommendations(numRecommendations)
@@ -24,17 +26,24 @@ const RecommendationComponent = ({ numRecommendations }) => {
         Your transaction recommendations based on the most used category:{' '}
         {mostUsedCategory}
       </h2>
-      <ul>
-        {recommendations.map((recommendation, index) => (
-          <li key={index}>
-            <h3>{recommendation.title}</h3>
-            <p>{recommendation.description}</p>
-            <p>Amount: {recommendation.amount}</p>
-          </li>
-        ))}
-      </ul>
+      {recommendations.map((recommendation, index) => (
+        <DetailComponent
+          key={index}
+          entityTitle="Recommendation"
+          fetchDetail={() => Promise.resolve(recommendation)}
+          detailFields={[
+            { key: 'title', label: 'Title' },
+            { key: 'description', label: 'Description' },
+            { key: 'amount', label: 'Amount' },
+          ]}
+        />
+      ))}
     </div>
   );
+};
+
+RecommendationComponent.propTypes = {
+  numRecommendations: PropTypes.number.isRequired,
 };
 
 export default RecommendationComponent;

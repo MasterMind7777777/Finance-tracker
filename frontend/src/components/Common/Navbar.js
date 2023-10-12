@@ -11,9 +11,7 @@ const Navbar = () => {
     <nav className="navbar">
       <ul className="navbar-list">
         <li className="navbar-item">
-          <Link to="/" className="navbar-link">
-            Home
-          </Link>
+          <Dropdown route="/" title="Home"></Dropdown>
         </li>
         <li className="navbar-item">
           <Dropdown route="/friends" title="Friends">
@@ -22,9 +20,10 @@ const Navbar = () => {
         </li>
         <li className="navbar-item">
           <Dropdown route="/transactions" title="Transactions">
-            <Link to="/transactions/splits">Splits</Link>
             <Link to="/transactions/bulk-upload">Import transactions</Link>
-            <Link to="/transactions/splits">Splits</Link>
+            <Link to="transactions/recommendations">
+              Recommended Transactions
+            </Link>
             {/* Add more links here */}
           </Dropdown>
         </li>
