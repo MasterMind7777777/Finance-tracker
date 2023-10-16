@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ActionElementType } from '../constants/actionElementType';
 import PropTypes from 'prop-types';
+import { logMessage } from '../../../api/loging';
 
 const FileInputComponent = ({ refreshFile, children }) => {
   const [status, setStatus] = useState('IDLE');
@@ -14,9 +15,11 @@ const FileInputComponent = ({ refreshFile, children }) => {
       setError(null);
       setFile(selectedFile);
       refreshFile(selectedFile);
+      logMessage('info', 'File selected successfully', 'FileInputComponent'); // Log success
     } else {
       setError('No file selected');
       setStatus('FAILED');
+      logMessage('error', 'No file was selected', 'FileInputComponent'); // Log failure
     }
   };
 

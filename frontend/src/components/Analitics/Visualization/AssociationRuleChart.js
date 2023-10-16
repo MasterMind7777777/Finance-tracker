@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Radar } from 'react-chartjs-2';
 import { Chart, RadialLinearScale, PointElement, LineElement } from 'chart.js';
 import '../../../styles/visualisaton/AssociationRuleChart.css';
+import { logMessage } from '../../../api/loging';
 
 // Register the scale and elements
 Chart.register(RadialLinearScale, PointElement, LineElement);
@@ -36,15 +37,37 @@ const AssociationRuleChart = ({ association_rules }) => {
   const chartRefs = useRef([]);
 
   useEffect(() => {
-    chartRefs.current.forEach((ref) => {
-      if (ref) {
-        ref.destroy();
-      }
-    });
-    chartRefs.current = [];
+    logMessage(
+      'info',
+      'Initializing AssociationRuleChart component',
+      'AssociationRuleChart',
+    ); // Info log
+
+    try {
+      chartRefs.current.forEach((ref) => {
+        if (ref) {
+          ref.destroy();
+        }
+      });
+      chartRefs.current = [];
+    } catch (error) {
+      logMessage(
+        'error',
+        `Failed to destroy chart references: ${error}`,
+        'AssociationRuleChart',
+      ); // Error log
+    }
 
     return () => {
-      chartRefs.current.forEach((ref) => ref && ref.destroy());
+      try {
+        chartRefs.current.forEach((ref) => ref && ref.destroy());
+      } catch (error) {
+        logMessage(
+          'error',
+          `Failed to destroy chart references on cleanup: ${error}`,
+          'AssociationRuleChart',
+        ); // Error log
+      }
     };
   }, [association_rules]);
 

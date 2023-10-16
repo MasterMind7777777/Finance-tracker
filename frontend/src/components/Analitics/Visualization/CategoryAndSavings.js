@@ -4,6 +4,7 @@ import { Pie } from 'react-chartjs-2';
 import { Chart, ArcElement, CategoryScale, Title, Tooltip } from 'chart.js';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { logMessage } from '../../../api/loging'; // Import the logMessage function
 
 // Register chart elements
 Chart.register(ArcElement, CategoryScale, Title, Tooltip);
@@ -13,6 +14,13 @@ const CategoryAndSavings = ({
   selected_category_spending,
   potential_savings,
 }) => {
+  // Info log for component rendering
+  logMessage(
+    'info',
+    `Rendering CategoryAndSavings component for category: ${category}`,
+    'CategoryAndSavings',
+  );
+
   // Data for Pie chart
   const pieData = {
     labels: ['Spent', 'Potential Savings'],
@@ -25,10 +33,27 @@ const CategoryAndSavings = ({
   };
 
   // Calculate percentage of potential savings
-  const savingPercentage = (
-    (potential_savings / selected_category_spending) *
-    100
-  ).toFixed(2);
+  let savingPercentage = 0;
+  try {
+    savingPercentage = (
+      (potential_savings / selected_category_spending) *
+      100
+    ).toFixed(2);
+
+    if (isNaN(savingPercentage)) {
+      logMessage(
+        'warn',
+        'Calculated savingPercentage is NaN',
+        'CategoryAndSavings',
+      );
+    }
+  } catch (error) {
+    logMessage(
+      'error',
+      `Failed to calculate savingPercentage: ${error}`,
+      'CategoryAndSavings',
+    );
+  }
 
   return (
     <div className="category-and-savings">

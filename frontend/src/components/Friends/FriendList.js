@@ -1,18 +1,41 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { getFriendsList } from '../../api/users';
+import { logMessage } from '../../api/loging'; // Import logMessage function
 
 const FriendList = ({ user }) => {
   const [friends, setFriends] = useState([]);
 
   const fetchFriends = async () => {
-    const result = await getFriendsList(user.id);
-    // Filter out only the accepted requests where the current user is the 'to_user'
-    setFriends(result);
+    try {
+      const result = await getFriendsList(user.id);
+      setFriends(result);
+      logMessage(
+        'info',
+        `Successfully fetched friends for user ID ${user.id}`,
+        'FriendList',
+      );
+    } catch (error) {
+      logMessage(
+        'error',
+        `Error fetching friends for user ID ${user.id}: ${error.message}`,
+        'FriendList',
+      );
+    }
   };
 
   useEffect(() => {
-    fetchFriends();
-  }, []);
+    logMessage('info', 'FriendList component mounted', 'FriendList');
+    if (user) {
+      fetchFriends();
+    } else {
+      logMessage(
+        'warn',
+        'User not defined in FriendList component',
+        'FriendList',
+      );
+    }
+  }, [user]);
 
   return (
     <div>
@@ -25,4 +48,11 @@ const FriendList = ({ user }) => {
     </div>
   );
 };
+
+FriendList.propTypes = {
+  user: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+  }).isRequired,
+};
+
 export default FriendList;

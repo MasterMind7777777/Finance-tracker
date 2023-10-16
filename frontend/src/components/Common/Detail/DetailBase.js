@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ActionsSection from '../../Common/Actions';
 import '../../../styles/detail/detail_main.css';
+import { logMessage } from '../../../api/loging';
 
 export const DetailComponent = ({
   fetchDetail,
@@ -16,19 +17,45 @@ export const DetailComponent = ({
 
   useEffect(() => {
     fetchDetail(id)
-      .then((data) => setEntity(data))
-      .catch((error) => console.error(error));
+      .then((data) => {
+        setEntity(data);
+        logMessage(
+          'info',
+          `Successfully fetched details for entity ID: ${id}`,
+          'DetailComponent',
+        ); // Log success
+      })
+      .catch((error) => {
+        logMessage(
+          'error',
+          `Error fetching entity ID: ${id}. Error: ${error.message}`,
+          'DetailComponent',
+        ); // Log error
+        console.error(error);
+      });
   }, [id, fetchDetail]);
 
   const executeAction = (action) => {
     action
       .execute(id)
       .then(() => {
+        logMessage(
+          'info',
+          `Successfully executed action for entity ID: ${id}`,
+          'DetailComponent',
+        ); // Log action success
         if (action.navigate) {
           navigate(action.navigate);
         }
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        logMessage(
+          'error',
+          `Failed to execute action for entity ID: ${id}. Error: ${error.message}`,
+          'DetailComponent',
+        ); // Log action failure
+        console.error(error);
+      });
   };
 
   if (!entity) {

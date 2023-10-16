@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import '../../../styles/lists/lists_main.css';
+import { logMessage } from '../../../api/loging';
 
 const defaultRenderContent = (item, config) => (
   <div className="list-item-content">
@@ -35,7 +36,7 @@ const defaultRenderContent = (item, config) => (
 
 const ListRenderer = ({
   items,
-  itemTitles, // New prop for list-item titles
+  itemTitles,
   keyExtractor,
   title,
   listClassName,
@@ -43,6 +44,13 @@ const ListRenderer = ({
   renderContent = defaultRenderContent,
   contentConfig,
 }) => {
+  useEffect(() => {
+    if (items.length === 0) {
+      logMessage('warn', 'No items to render', 'ListRenderer'); // Log warning if no items
+    } else {
+      logMessage('info', `${items.length} items rendered`, 'ListRenderer'); // Log info on items rendered
+    }
+  }, [items]);
   return (
     <div
       className={`list-container ${listClassName}`}

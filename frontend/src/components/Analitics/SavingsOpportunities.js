@@ -5,6 +5,7 @@ import { getSavingsOpportunities } from '../../api/transaction';
 import CategoryAndSavings from './Visualization/CategoryAndSavings';
 import AssociationRuleChart from './Visualization/AssociationRuleChart';
 import '../../styles/visualisaton/SavingsOpportunities.css';
+import { logMessage } from '../../api/loging';
 
 const AssociationRule = ({ rule }) => (
   <li>
@@ -90,10 +91,24 @@ const SavingsOpportunities = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        logMessage(
+          'info',
+          `Fetching savings opportunities for category ID: ${categoryId}`,
+          'SavingsOpportunities',
+        );
         const result = await getSavingsOpportunities(categoryId);
         setData(result);
+        logMessage(
+          'info',
+          `Data fetched successfully for category ID: ${categoryId}`,
+          'SavingsOpportunities',
+        );
       } catch (error) {
-        console.error('Error fetching data:', error);
+        logMessage(
+          'error',
+          `Error fetching data for category ID: ${categoryId}. Error: ${error}`,
+          'SavingsOpportunities',
+        );
       } finally {
         setLoading(false);
       }

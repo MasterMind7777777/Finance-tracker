@@ -2,21 +2,38 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { getTransactionRecommendations } from '../../api/transaction';
 import { DetailComponent } from '../Common/Detail/DetailBase';
+import { logMessage } from '../../api/loging'; // Import logMessage function
 
 const RecommendationComponent = ({ numRecommendations }) => {
   const [recommendations, setRecommendations] = useState([]);
   const [mostUsedCategory, setMostUsedCategory] = useState(null);
 
   useEffect(() => {
+    logMessage(
+      'info',
+      'Fetching transaction recommendations',
+      'RecommendationComponent',
+    );
+
     getTransactionRecommendations(numRecommendations)
       .then((response) => {
         if (response) {
           setRecommendations(response.recommendations);
           setMostUsedCategory(response.most_used_category);
+          logMessage(
+            'info',
+            'Successfully fetched transaction recommendations',
+            'RecommendationComponent',
+          );
         }
       })
       .catch((error) => {
         console.error('Failed to fetch transaction recommendations:', error);
+        logMessage(
+          'error',
+          `Failed to fetch transaction recommendations: ${error.message}`,
+          'RecommendationComponent',
+        );
       });
   }, [numRecommendations]);
 

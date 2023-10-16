@@ -11,6 +11,7 @@ APP_LOG_FILES = {
     "finance_tracker": "finance_tracker.log",
     "transactions": "transactions.log",
     "users": "users.log",
+    "react_loging_views" : "react_loging_views.log"
 }
 
 CELERY_APP_LOG_FILES = {

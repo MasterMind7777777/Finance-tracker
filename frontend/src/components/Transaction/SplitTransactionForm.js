@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { splitTransaction } from '../../api/transaction';
 import { ActionElementType } from '../Common/constants/actionElementType';
 import PropTypes from 'prop-types';
+import { logMessage } from '../../api/loging'; // Import logMessage function
 
 const SplitTransactionForm = ({ children }) => {
   const { id: transactionId } = useParams();
@@ -26,9 +27,29 @@ const SplitTransactionForm = ({ children }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const response = await splitTransaction(transactionId, { splits });
-    // TODO: Handle the response
-    console.log(response);
+
+    logMessage(
+      'info',
+      'Initiating split transaction process.',
+      'SplitTransactionForm',
+    );
+
+    try {
+      const response = await splitTransaction(transactionId, { splits });
+      logMessage(
+        'info',
+        'Split transaction successful.',
+        'SplitTransactionForm',
+      );
+      console.log(response); // You can remove this after verifying the log
+    } catch (error) {
+      logMessage(
+        'error',
+        `Error during split transaction: ${error.message}`,
+        'SplitTransactionForm',
+      );
+      console.error(error); // You can keep this for additional local debugging
+    }
   };
 
   const splitInputs = splits.map((split, index) => ({

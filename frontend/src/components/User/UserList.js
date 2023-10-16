@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getUserList } from '../../api/users';
 import AuthService from '../../services/authService';
+import { logMessage } from '../../api/loging';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -9,8 +10,20 @@ const UserList = () => {
     const token = AuthService.getCurrentUser()?.access_token;
     if (token) {
       getUserList(token)
-        .then((data) => setUsers(data))
-        .catch((err) => console.error(err));
+        .then((data) => {
+          setUsers(data);
+          logMessage('info', 'User list fetched successfully.', 'UserList'); // Log successful data fetching
+        })
+        .catch((err) => {
+          console.error(err);
+          logMessage('error', `Error fetching user list: ${err}`, 'UserList'); // Log the error
+        });
+    } else {
+      logMessage(
+        'warn',
+        'Access token not found. Fetching user list aborted.',
+        'UserList',
+      ); // Log the absence of a token
     }
   }, []);
 

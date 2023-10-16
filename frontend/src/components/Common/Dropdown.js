@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { logMessage } from '../../api/loging'; // Importing logMessage function
 
 const Dropdown = ({ route, title, children }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleMouseOver = () => {
     setIsOpen(true);
+    logMessage('info', `Dropdown ${title} opened`, 'Dropdown'); // Log dropdown open
   };
 
   const handleMouseOut = () => {
     setIsOpen(false);
+    logMessage('info', `Dropdown ${title} closed`, 'Dropdown'); // Log dropdown close
   };
 
   return (

@@ -1,30 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createTransaction } from '../../api/transaction';
-import { getCategoryList } from '../../api/category'; // Import getCategoryList
+import { getCategoryList } from '../../api/category';
 import FormComponent from '../Common/Forms/FormBase';
+import { logMessage } from '../../api/loging'; // Import logMessage function
 
 const AddTransaction = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState(0);
-  const [category, setCategory] = useState(''); // State for category
-  const [categoryOptions, setCategoryOptions] = useState([]); // State to store category options
+  const [category, setCategory] = useState('');
+  const [categoryOptions, setCategoryOptions] = useState([]);
 
-  // Fetch category options when the component mounts
   useEffect(() => {
     async function fetchCategories() {
       try {
         const response = await getCategoryList();
         if (Array.isArray(response)) {
-          // Check if response.data is an array
           setCategoryOptions(response);
+          logMessage(
+            'info',
+            'Successfully fetched category list',
+            'AddTransaction',
+          );
         } else {
-          console.error('Response data is not an array'); // Debug log
+          logMessage('warn', 'Response data is not an array', 'AddTransaction');
         }
       } catch (error) {
-        console.error('Error fetching categories: ', error);
+        logMessage(
+          'error',
+          `Error fetching categories: ${error.message}`,
+          'AddTransaction',
+        );
       }
     }
 
@@ -33,22 +41,30 @@ const AddTransaction = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    try {
+      const transaction = {
+        title,
+        description,
+        amount,
+        category,
+      };
 
-    const transaction = {
-      title,
-      description,
-      amount,
-      category, // Include the selected category in the transaction object
-    };
+      const newTransaction = await createTransaction(transaction);
 
-    const newTransaction = await createTransaction(transaction);
+      setTitle('');
+      setDescription('');
+      setAmount(0);
+      setCategory('');
 
-    setTitle('');
-    setDescription('');
-    setAmount(0);
-    setCategory(''); // Reset the category field after form submission
-
-    navigate(`/transactions/${newTransaction.id}`);
+      navigate(`/transactions/${newTransaction.id}`);
+      logMessage('info', 'Transaction successfully added', 'AddTransaction');
+    } catch (error) {
+      logMessage(
+        'error',
+        `Failed to add transaction: ${error.message}`,
+        'AddTransaction',
+      );
+    }
   };
 
   return (

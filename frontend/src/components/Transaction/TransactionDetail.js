@@ -5,12 +5,18 @@ import AssignCategoryButton from '../Category/AssignCategoryButton';
 // import PropTypes from 'prop-types';
 import SplitTransactionForm from './SplitTransactionForm';
 import { DetailComponent } from '../Common/Detail/DetailBase'; // Import generalized DetailComponent
+import { logMessage } from '../../api/loging';
 
 const TransactionDetailParent = () => {
   const [transaction, setTransaction] = useState(null);
   const { id } = useParams();
 
   const refreshTransaction = async () => {
+    logMessage(
+      'info',
+      'Fetching transaction details.',
+      'TransactionDetailParent',
+    );
     const response = await getTransactionDetail(id);
     setTransaction(response);
   };
@@ -24,6 +30,11 @@ const TransactionDetailParent = () => {
   ];
 
   const handleDeleteAction = async () => {
+    logMessage(
+      'info',
+      `Deleting transaction with ID: ${id}`,
+      'TransactionDetailParent',
+    );
     await deleteTransaction(id);
   };
 
@@ -49,6 +60,11 @@ const TransactionDetailParent = () => {
   ];
 
   useEffect(() => {
+    logMessage(
+      'info',
+      'TransactionDetailParent component mounted.',
+      'TransactionDetailParent',
+    );
     refreshTransaction();
   }, [id]);
 

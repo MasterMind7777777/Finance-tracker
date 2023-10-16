@@ -2,25 +2,49 @@ import React, { useEffect, useState } from 'react';
 import { getTransactionList } from '../../api/transaction';
 import AuthService from '../../services/authService';
 import ListRenderer from '../Common/Lists/ListBase';
+import { logMessage } from '../../api/loging';
 
 const TransactionList = () => {
   const [transactions, setTransactions] = useState([]);
   const [transactionTitles, setTransactionTitles] = useState([]);
 
   useEffect(() => {
+    logMessage('info', 'TransactionList component mounted.', 'TransactionList');
     const token = AuthService.getCurrentUser()?.access_token;
     if (token) {
+      logMessage(
+        'info',
+        'Attempting to fetch transaction list.',
+        'TransactionList',
+      );
       getTransactionList(token)
         .then((data) => {
           setTransactions(data);
-          // Generate titles for each transaction, this could be anything based on your needs
-          console.log(transactions);
+          logMessage(
+            'info',
+            `Fetched ${data.length} transactions.`,
+            'TransactionList',
+          );
+          // Generate titles for each transaction
           const titles = data.map(
             (transaction) => `Transaction: ${transaction.title}`,
           );
           setTransactionTitles(titles);
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          logMessage(
+            'error',
+            `Error fetching transactions: ${err.message}`,
+            'TransactionList',
+          );
+          console.error(err);
+        });
+    } else {
+      logMessage(
+        'warning',
+        'No authentication token found.',
+        'TransactionList',
+      );
     }
   }, []);
 
@@ -30,7 +54,7 @@ const TransactionList = () => {
       { key: 'amount', label: 'Amount' },
       { key: 'date', label: 'Date' },
       { key: 'category', label: 'Category' },
-    ], // Now an array of objects
+    ],
     links: [
       { link: 'id', linkPrefix: '/transactions/', linkText: 'View Details' },
     ],

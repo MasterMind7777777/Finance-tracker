@@ -4,6 +4,7 @@ from .views import (CategoryBudgetViewSet, CategoryViewSet,
                     TransactionViewSet, FinancialHealthView, 
                     SavingGoalViewSet, UserViewSet,
                     TransactionSplitViewSet)
+from .react_loging_views import react_logging_view
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -31,7 +32,7 @@ urlpatterns = [
     path('transaction_splits/<int:pk>/decline/', TransactionSplitViewSet.as_view({'put': 'decline'}), name='transaction_split-decline'),
     path('transaction_splits/', TransactionSplitViewSet.as_view({'get': 'list'}), name='transaction_split-list'),
     path('financial-health/', FinancialHealthView.as_view(), name='financial-health'),
-    # other paths...
+    path('react_logging/', react_logging_view, name='react_logging_view'),
 ]
 
 urlpatterns += router.urls

@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthService from '../../services/authService';
 import AuthContext from '../../context/AuthContext';
+import { logMessage } from '../../api/loging'; // Import the logging function
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,11 +15,13 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    logMessage('info', 'Login attempt initiated.', 'Login');
     setMessage('');
     setLoading(true);
     try {
       const success = await AuthService.login(username, password);
       if (success) {
+        logMessage('info', 'Login successful.', 'Login');
         // Set the user in the context
         const currentUser = AuthService.getCurrentUser();
         setUser(currentUser);
@@ -34,6 +37,7 @@ const Login = () => {
         error.message ||
         error.toString();
 
+      logMessage('error', `Login failed: ${resMessage}`, 'Login');
       setLoading(false);
       setMessage(resMessage);
     }

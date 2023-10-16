@@ -1,11 +1,30 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AuthContext from '../../context/AuthContext';
 import Dropdown from './Dropdown';
 import '../../styles/Common/Navbar.css';
+import { logMessage } from '../../api/loging'; // Importing logMessage function
 
 const Navbar = () => {
   const { user } = useContext(AuthContext);
+
+  // Log when the component mounts and unmounts
+  useEffect(() => {
+    logMessage('info', 'Navbar component mounted', 'Navbar');
+
+    return () => {
+      logMessage('info', 'Navbar component unmounted', 'Navbar');
+    };
+  }, []);
+
+  // Log when the user's authentication status changes
+  useEffect(() => {
+    if (user) {
+      logMessage('info', 'User is authenticated', 'Navbar');
+    } else {
+      logMessage('info', 'User is not authenticated', 'Navbar');
+    }
+  }, [user]);
 
   return (
     <nav className="navbar">

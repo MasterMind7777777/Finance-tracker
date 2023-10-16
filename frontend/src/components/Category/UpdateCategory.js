@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCategoryDetail, updateCategory } from '../../api/category';
+import { logMessage } from '../../api/loging'; // Import centralized logging function
 
 export const CategoryEdit = () => {
   const { id } = useParams();
@@ -13,8 +14,20 @@ export const CategoryEdit = () => {
       .then((data) => {
         setName(data.name);
         setType(data.type);
+        logMessage(
+          'info',
+          `Successfully fetched details for category ID: ${id}`,
+          'CategoryEdit',
+        ); // Log successful fetch
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        logMessage(
+          'error',
+          `Error fetching category ID: ${id}. Error: ${error.message}`,
+          'CategoryEdit',
+        ); // Log error
+        console.error(error);
+      });
   }, [id]);
 
   const handleSubmit = (event) => {
@@ -23,8 +36,20 @@ export const CategoryEdit = () => {
     updateCategory(id, { name, type })
       .then(() => {
         navigate(`/categories/${id}`);
+        logMessage(
+          'info',
+          `Successfully updated category ID: ${id}`,
+          'CategoryEdit',
+        ); // Log successful update
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        logMessage(
+          'error',
+          `Failed to update category ID: ${id}. Error: ${error.message}`,
+          'CategoryEdit',
+        ); // Log error
+        console.error(error);
+      });
   };
 
   return (

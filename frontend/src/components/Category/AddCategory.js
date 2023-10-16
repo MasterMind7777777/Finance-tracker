@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createCategory } from '../../api/category';
 import FormComponent from '../Common/Forms/FormBase';
+import { logMessage } from '../../api/loging'; // Import centralized logging function
 
 export const CategoryCreate = () => {
   const CATEGORY_TYPES = [
@@ -15,14 +16,25 @@ export const CategoryCreate = () => {
   const [type, setType] = useState(CATEGORY_TYPES[0].value);
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    createCategory({ name, type })
-      .then(() => {
-        navigate('/categories');
-      })
-      .catch((error) => console.error(error));
+    try {
+      logMessage(
+        'info',
+        `Attempting to create category with name: ${name} and type: ${type}`,
+        'CategoryCreate',
+      );
+      await createCategory({ name, type });
+      logMessage('info', 'Category successfully created.', 'CategoryCreate');
+      navigate('/categories');
+    } catch (error) {
+      logMessage(
+        'error',
+        `Error while creating category: ${error}`,
+        'CategoryCreate',
+      );
+    }
   };
 
   return (

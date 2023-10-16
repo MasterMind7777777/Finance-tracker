@@ -1,8 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import '../../styles/actions/actions_main.css';
+import { logMessage } from '../../api/loging';
 
 const ActionsSection = ({ actionConfigs, executeAction }) => {
+  const handleAction = async (Component) => {
+    try {
+      await executeAction(Component);
+      logMessage('info', 'Action executed successfully', 'ActionsSection');
+    } catch (error) {
+      logMessage(
+        'error',
+        `Action execution failed: ${error.message}`,
+        'ActionsSection',
+      );
+    }
+  };
+
   const renderElement = (element, elIndex) => {
     switch (element.type) {
       case 'button':
@@ -75,7 +89,7 @@ const ActionsSection = ({ actionConfigs, executeAction }) => {
             <button
               id={`detail-action-button-${index}`}
               className="detail-action"
-              onClick={() => executeAction && executeAction(Component)}
+              onClick={() => handleAction(Component)}
             >
               {Component.label}
             </button>

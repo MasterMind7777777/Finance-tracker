@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AuthService from '../services/authService';
+import { logMessage } from './loging';
 
 const API_URL = 'http://127.0.0.1:8000/api_v1';
 
@@ -18,11 +19,28 @@ export const authenticatedRequest = (method, url, data = null) => {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((response) => response.data)
+      .then((response) => {
+        logMessage(
+          'info',
+          `Request to ${url} successful.`,
+          'authenticatedRequest',
+        ); // Success log
+        return response.data;
+      })
       .catch((error) => {
+        logMessage(
+          'error',
+          `Request to ${url} failed. Error: ${error}`,
+          'authenticatedRequest',
+        ); // Error log
         throw error;
       });
   } else {
+    logMessage(
+      'warn',
+      'No access token available. Request failed.',
+      'authenticatedRequest',
+    ); // Warning log
     throw new Error('No access token available');
   }
 };

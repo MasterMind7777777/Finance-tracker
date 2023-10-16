@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ListRenderer from '../Common/Lists/ListBase';
 import { getBudgetList } from '../../api/budget';
 import AuthService from '../../services/authService';
+import { logMessage } from '../../api/loging'; // Import the logMessage function
 
 const BudgetList = () => {
   const [budgets, setBudgets] = useState([]);
@@ -10,10 +11,10 @@ const BudgetList = () => {
   useEffect(() => {
     const token = AuthService.getCurrentUser()?.access_token;
     if (token) {
-      console.log('Fetching budget list...');
+      logMessage('info', 'Attempting to fetch budget list.', 'BudgetList');
       getBudgetList(token)
         .then((data) => {
-          console.log('Received data:', data);
+          logMessage('info', 'Successfully fetched budget list.', 'BudgetList');
           setBudgets(data);
 
           // Generate titles for each budget item, similar to transactions
@@ -23,8 +24,19 @@ const BudgetList = () => {
           setBudgetTitles(titles);
         })
         .catch((err) => {
+          logMessage(
+            'error',
+            `Failed to fetch budget list. Error: ${err}`,
+            'BudgetList',
+          );
           console.error('Error fetching data:', err);
         });
+    } else {
+      logMessage(
+        'warn',
+        'User is not authenticated. Skipping budget list fetching.',
+        'BudgetList',
+      );
     }
   }, []);
 

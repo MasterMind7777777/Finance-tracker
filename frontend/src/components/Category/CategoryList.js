@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getCategoryList } from '../../api/category';
 import ListRenderer from '../Common/Lists/ListBase';
+import { logMessage } from '../../api/loging'; // Import centralized logging function
 
 const CategoryList = () => {
   const [categories, setCategories] = useState([]);
@@ -12,10 +13,20 @@ const CategoryList = () => {
         const response = await getCategoryList();
         setCategories(response);
 
-        // Create titles for each category, this could be anything based on your needs
         const titles = response.map((category) => `Category: ${category.name}`);
-        setItemTitles(titles); // Set the titles
+        setItemTitles(titles);
+
+        logMessage(
+          'info',
+          'Successfully fetched category list',
+          'CategoryList',
+        ); // Log the successful fetch
       } catch (error) {
+        logMessage(
+          'error',
+          `Failed to fetch category list. Error: ${error.message}`,
+          'CategoryList',
+        ); // Log the error
         console.error(error);
       }
     };
@@ -47,7 +58,7 @@ const CategoryList = () => {
         items={categories}
         keyExtractor={(item, index) => `${item.id}-${index}`}
         title="Categories"
-        itemTitles={itemTitles} // Pass the titles to ListRenderer
+        itemTitles={itemTitles}
         contentConfig={contentConfig}
       />
     </div>

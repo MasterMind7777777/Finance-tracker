@@ -1,6 +1,7 @@
 import React from 'react';
 import '../../../styles/forms/forms_main.css';
 import PropTypes from 'prop-types';
+import { logMessage } from '../../../api/loging';
 
 export default function FormComponent({
   fields,
@@ -8,8 +9,21 @@ export default function FormComponent({
   buttonText,
   onSubmit,
 }) {
+  const handleSubmit = async (event) => {
+    try {
+      await onSubmit(event);
+      logMessage('info', 'Form submitted successfully', 'FormComponent'); // Log success
+    } catch (error) {
+      logMessage(
+        'error',
+        `Form submission failed: ${error.message}`,
+        'FormComponent',
+      ); // Log failure
+    }
+  };
+
   return (
-    <form className={`form ${formClassName}`} onSubmit={onSubmit}>
+    <form className={`form ${formClassName}`} onSubmit={handleSubmit}>
       {fields.map((field, index) => (
         <div className="form-group" key={index}>
           <label className="form-label">

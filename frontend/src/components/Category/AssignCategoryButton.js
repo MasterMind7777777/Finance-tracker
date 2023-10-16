@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { assignCategory } from '../../api/transaction';
 import { ActionElementType } from '../Common/constants/actionElementType';
 import { TaskStatus } from '../Common/constants/StatusCodes'; // Import your TaskStatus object
+import { logMessage } from '../../api/loging'; // Import centralized logging function
 
 const AssignCategoryButton = ({
   transactionId,
@@ -15,23 +16,37 @@ const AssignCategoryButton = ({
   const fetchResult = async () => {
     try {
       setStatus(TaskStatus.PENDING); // Use TaskStatus.PENDING
+      logMessage(
+        'info',
+        `Attempting to assign category for transactionId: ${transactionId}`,
+        'AssignCategoryButton',
+      );
+
       const response = await assignCategory(transactionId);
       if (response.status === TaskStatus.COMPLETE) {
-        // Use TaskStatus.COMPLETE
-        setStatus(TaskStatus.COMPLETE); // Use TaskStatus.COMPLETE
+        setStatus(TaskStatus.COMPLETE);
         refreshTransaction();
+        logMessage(
+          'info',
+          `Successfully assigned category for transactionId: ${transactionId}`,
+          'AssignCategoryButton',
+        );
       } else if (response.status === TaskStatus.PENDING) {
-        // Use TaskStatus.PENDING
         setTimeout(fetchResult, 500);
       }
     } catch (err) {
-      setStatus(TaskStatus.ERROR); // Use TaskStatus.ERROR
+      setStatus(TaskStatus.ERROR);
       setError(err.message);
+      logMessage(
+        'error',
+        `Failed to assign category for transactionId: ${transactionId}. Error: ${err.message}`,
+        'AssignCategoryButton',
+      );
     }
   };
 
   useEffect(() => {
-    setStatus(null); // Use TaskStatus.PENDING
+    setStatus(null);
     setError(null);
   }, [transactionId]);
 
@@ -44,9 +59,9 @@ const AssignCategoryButton = ({
       type: ActionElementType.BUTTON,
       props: {
         onClick: handleAssignCategory,
-        disabled: status === TaskStatus.PENDING, // Use TaskStatus.PENDING
+        disabled: status === TaskStatus.PENDING,
         label:
-          status === TaskStatus.PENDING ? 'Assigning...' : 'Assign Category', // Use TaskStatus.PENDING
+          status === TaskStatus.PENDING ? 'Assigning...' : 'Assign Category',
       },
     },
     {
